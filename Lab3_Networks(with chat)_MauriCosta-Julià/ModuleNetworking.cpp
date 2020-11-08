@@ -121,7 +121,7 @@ bool ModuleNetworking::preUpdate()
 				int recivedSize = 0;
 				if ((recivedSize = recv(s, reinterpret_cast<char*>(incomingDataBuffer), incomingDataBufferSize, 0)) > 0)
 					onSocketReceivedData(s, incomingDataBuffer, recivedSize);
-				else if(recivedSize == 0 && !App->modScreen->screenGame->isServer)
+				else if(recivedSize == 0)
 					disconnectedSockets.push_back(s);
 				else{
 					DWORD error = WSAGetLastError();

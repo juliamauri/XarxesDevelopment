@@ -1,5 +1,6 @@
 #include "Networks.h"
 
+#include "imgui/imgui_internal.h"
 
 extern HWND hwnd;                                // Window handle
 extern ID3D11Device        *g_pd3dDevice;        // Direct3d11 device pointer
@@ -54,6 +55,7 @@ bool ModuleUI::gui()
 		else if (entry.type == LOG_TYPE_DEBUG) {
 			ImGui::PushStyleColor(ImGuiCol_Text, ImVec4(0.3f, 0.3f, 1.0f, 1.0f));
 		}
+
 		ImGui::TextWrapped("%s", entry.message);
 		if (entry.type == LOG_TYPE_WARN ||
 			entry.type == LOG_TYPE_ERROR ||
@@ -62,6 +64,8 @@ bool ModuleUI::gui()
 			ImGui::PopStyleColor();
 		}
 	}
+
+	ImGui::SetScrollHere();
 
 	ImGui::End();
 

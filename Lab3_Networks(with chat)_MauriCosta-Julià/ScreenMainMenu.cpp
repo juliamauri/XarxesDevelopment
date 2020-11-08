@@ -3,10 +3,10 @@
 
 void ScreenMainMenu::enable()
 {
-	LOG("Example Info log entry...");
-	DLOG("Example Debug log entry...");
-	WLOG("Example Warning log entry...");
-	ELOG("Example Error log entry...");
+	//LOG("Example Info log entry...");
+	//DLOG("Example Debug log entry...");
+	//WLOG("Example Warning log entry...");
+	//ELOG("Example Error log entry...");
 }
 
 void ScreenMainMenu::gui()
@@ -21,7 +21,7 @@ void ScreenMainMenu::gui()
 
 	if (disconnectedFromServer) {
 		ImGui::PushStyleColor(ImGuiCol_::ImGuiCol_Text, { 1.0f, 0.0f, 0.0f, 1.0f });
-		ImGui::Text("Last Connection was disconnected from Server");
+		ImGui::Text("Last Connection was %s from Server", (!kickedFromServer) ? "disconnected" : "kicked");
 		ImGui::PopStyleColor();
 		ImGui::Spacing();
 	}
@@ -29,11 +29,14 @@ void ScreenMainMenu::gui()
 	ImGui::Text("Server");
 
 	static int localServerPort = 8888;
+	ImGui::PushID("#LocalServerPort");
 	ImGui::InputInt("Server port", &localServerPort);
+	ImGui::PopID();
 
 	if (ImGui::Button("Start server"))
 	{
 		disconnectedFromServer = false;
+		kickedFromServer = false;
 		App->modScreen->screenGame->isServer = true;
 		App->modScreen->screenGame->serverPort = localServerPort;
 		App->modScreen->swapScreensWithTransition(this, App->modScreen->screenGame);

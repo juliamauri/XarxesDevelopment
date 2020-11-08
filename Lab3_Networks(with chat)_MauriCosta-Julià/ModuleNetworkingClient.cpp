@@ -92,7 +92,7 @@ bool ModuleNetworkingClient::update()
 			state = ClientState::Logging;
 		}
 		else if (!reconnecting) {
-			LOG("Connection to the server server failed, reconnecting in %.f seconds\n", reconnectTime);
+			WLOG("Connection to the server server failed, reconnecting in %.f seconds\n", reconnectTime);
 			reconnecting = true;
 		}
 		else {
@@ -119,46 +119,56 @@ bool ModuleNetworkingClient::gui()
 		ImVec2 texSize(400.0f, 400.0f * tex->height / tex->width);
 		ImGui::Image(tex->shaderResource, texSize);
 
-		ImGui::Text("%s connected to the server...", playerName.c_str());
+		if (ImGui::Button("Close Client")) {
+			disconnect();
+			usersInChat.clear();
+			chatMessages.clear();
+			state = ClientState::Stopped;
+		}
+
+		if(state == ClientState::Start) ImGui::Text("Connecting to server...");
+		else ImGui::Text("%s connected to the server...", playerName.c_str());
 
 		ImGui::End();
 
 		//Chat Window
-		ImGui::Begin("Chat Window");
+		if (state == ClientState::Logging) {
+			ImGui::Begin("Chat Window");
 
-		ImGui::Text((usersInChat.empty()) ? "No other user than you on chat" : "Users connected:");
-		if (!usersInChat.empty()) {
-			if (ImGui::CollapsingHeader("Show Users connected")) 
-				for (auto& user : usersInChat) ImGui::BulletText(user.c_str());
+			ImGui::Text((usersInChat.empty()) ? "No other user than you on chat" : "Users connected:");
+			if (!usersInChat.empty()) {
+				if (ImGui::CollapsingHeader("Show Users connected"))
+					for (auto& user : usersInChat) ImGui::BulletText(user.c_str());
+			}
+
+			ImGui::Separator();
+
+			for (auto& msg : chatMessages)ImGui::TextWrapped("%s", msg.c_str());
+
+			ImGui::Separator();
+			static const uint32 messageSize = Kilobytes(1);
+			static char messageDataBuffer[messageSize];
+			unsigned int nameLenght = playerName.length();
+			unsigned int sizeMSGAligment = (sizeof(unsigned int) * 2) + (sizeof(char) * nameLenght) + sizeof(ChatEvents);
+
+			ImGui::InputText("message", &messageDataBuffer[sizeMSGAligment], messageSize - sizeMSGAligment, ImGuiInputTextFlags_::ImGuiInputTextFlags_CtrlEnterForNewLine);
+			ImGui::SameLine();
+
+			unsigned int textSize = std::strlen(&messageDataBuffer[sizeMSGAligment]);
+			if ((ImGui::Button("Send") || ImGui::GetIO().KeysDown[ImGuiKey_::ImGuiKey_Enter]) && textSize > 0) {
+				ChatEvents eventC = ChatEvents::C_MENSAGE;
+				memcpy(&messageDataBuffer[0], &eventC, sizeof(ChatEvents));
+				memcpy(&messageDataBuffer[sizeof(ChatEvents)], &nameLenght, sizeof(unsigned int));
+				memcpy(&messageDataBuffer[sizeof(ChatEvents) + sizeof(unsigned int)], playerName.c_str(), sizeof(char) * nameLenght);
+				memcpy(&messageDataBuffer[sizeof(ChatEvents) + sizeof(unsigned int) + (sizeof(char) * nameLenght)], &textSize, sizeof(unsigned int));
+
+				chatMessages.push_back(playerName + ": " + &messageDataBuffer[sizeMSGAligment]);
+				send(cSocket, messageDataBuffer, sizeMSGAligment + textSize, 0);
+				messageDataBuffer[sizeMSGAligment] = '\0';
+			}
+
+			ImGui::End();
 		}
-
-		ImGui::Separator();
-
-		for(auto& msg : chatMessages)ImGui::TextWrapped("%s", msg.c_str());
-
-		ImGui::Separator();
-		static const uint32 messageSize = Kilobytes(1);
-		static char messageDataBuffer[messageSize];
-		unsigned int nameLenght = playerName.length();
-		unsigned int sizeMSGAligment = (sizeof(unsigned int) * 2)  + (sizeof(char) * nameLenght) + sizeof(ChatEvents);
-
-		ImGui::InputText("message", &messageDataBuffer[sizeMSGAligment], messageSize - sizeMSGAligment, ImGuiInputTextFlags_::ImGuiInputTextFlags_CtrlEnterForNewLine);
-		ImGui::SameLine();
-
-		unsigned int textSize = std::strlen(&messageDataBuffer[sizeMSGAligment]);
-		if ((ImGui::Button("Send") || ImGui::GetIO().KeysDown[ImGuiKey_::ImGuiKey_Enter]) && textSize > 0) {
-			ChatEvents eventC = ChatEvents::C_MENSAGE;
-			memcpy(&messageDataBuffer[0], &eventC, sizeof(ChatEvents));
-			memcpy(&messageDataBuffer[sizeof(ChatEvents)], &nameLenght, sizeof(unsigned int));
-			memcpy(&messageDataBuffer[sizeof(ChatEvents) + sizeof(unsigned int)], playerName.c_str(), sizeof(char) * nameLenght);
-			memcpy(&messageDataBuffer[sizeof(ChatEvents) + sizeof(unsigned int) + (sizeof(char) * nameLenght)], &textSize, sizeof(unsigned int));
-
-			chatMessages.push_back(playerName + ": " + &messageDataBuffer[sizeMSGAligment]);
-			send(cSocket, messageDataBuffer, sizeMSGAligment + textSize, 0);
-			messageDataBuffer[sizeMSGAligment] = '\0';
-		}
-
-		ImGui::End();
 	}
 
 	return true;
@@ -172,13 +182,16 @@ void ModuleNetworkingClient::onSocketReceivedData(SOCKET socket, byte * data, ui
 	memcpy(&incomingEvent, cursor, size);
 	cursor += size;
 
-	unsigned int nameSize = 0;
-	size = sizeof(unsigned int);
-	memcpy(&nameSize, cursor, size);
-	cursor += size;
+	std::string fromUser;
+	if (incomingEvent != ModuleNetworking::C_SERVERKICK) {
+		unsigned int nameSize = 0;
+		size = sizeof(unsigned int);
+		memcpy(&nameSize, cursor, size);
+		cursor += size;
 
-	std::string fromUser(reinterpret_cast<const char*>(cursor), nameSize);
-	cursor += nameSize * sizeof(char);
+		fromUser = std::string(reinterpret_cast<const char*>(cursor), nameSize);
+		cursor += nameSize * sizeof(char);
+	}
 
 	switch (incomingEvent)
 	{
@@ -205,12 +218,18 @@ void ModuleNetworkingClient::onSocketReceivedData(SOCKET socket, byte * data, ui
 		chatMessages.push_back(fromUser + ": " + message);
 		break;
 	}
+	case ModuleNetworking::C_SERVERKICK:
+	{
+		WLOG("Client was kicked by server.");
+		App->modScreen->screenMainMenu->kickedFromServer = true;
+		break;
+	}
 	}
 }
 
 void ModuleNetworkingClient::onSocketDisconnected(SOCKET socket)
 {
-	LOG("Disconnected from server\n");
+	WLOG("Disconnected from server\n");
 	App->modScreen->screenMainMenu->disconnectedFromServer = true;
 	usersInChat.clear();
 	chatMessages.clear();

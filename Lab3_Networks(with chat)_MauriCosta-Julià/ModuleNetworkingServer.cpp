@@ -1,7 +1,6 @@
 #include "ModuleNetworkingServer.h"
 
-
-
+#include <string>
 
 //////////////////////////////////////////////////////////////////////
 // ModuleNetworkingServer public methods
@@ -84,8 +83,17 @@ bool ModuleNetworkingServer::gui()
 		ImVec2 texSize(400.0f, 400.0f * tex->height / tex->width);
 		ImGui::Image(tex->shaderResource, texSize);
 
-		ImGui::Text("List of connected sockets:");
+		if (ImGui::Button("Close Server")) {
+			disconnect();
+			state = ServerState::Stopped;
+			connectedSockets.clear();
+		}
 
+		ImGui::Text("List of connected sockets:");
+		static bool deletionSelected = false;
+		static std::vector<ConnectedSocket>::iterator toDelete;
+		toDelete = connectedSockets.begin();
+		unsigned int count = 0;
 		for (auto &connectedSocket : connectedSockets)
 		{
 			ImGui::Separator();
@@ -97,6 +105,38 @@ bool ModuleNetworkingServer::gui()
 				connectedSocket.address.sin_addr.S_un.S_un_b.s_b4,
 				ntohs(connectedSocket.address.sin_port));
 			ImGui::Text("Player name: %s", connectedSocket.playerName.c_str());
+
+			ImGui::PushID(std::string("#" + std::to_string(count++) + "socketDelete").c_str());
+			if (ImGui::Button("Kick form server")) deletionSelected = true;
+			else if(!deletionSelected) toDelete++;
+			ImGui::PopID();
+		}
+
+		if (deletionSelected) {
+			auto& socketToDelete = *toDelete;
+
+			//Tell client that was kicked
+			unsigned int sizeToSend = sizeof(ChatEvents);
+			char* sendKickUserBuffer = new char[sizeToSend];
+			ChatEvents eventC = ChatEvents::C_SERVERKICK;
+			memcpy(&sendKickUserBuffer[0], &eventC, sizeof(ChatEvents));
+			send(socketToDelete.socket, sendKickUserBuffer, sizeToSend, 0);
+			DisconnectSocket(socketToDelete.socket);
+
+			//Tell other clients that one client was disconnected.
+			unsigned int nameLenght = socketToDelete.playerName.length();
+			sizeToSend = sizeof(unsigned int) + (sizeof(char) * nameLenght) + sizeof(ChatEvents);
+			char* sendCurrentUsersBuffer = new char[sizeToSend];
+			eventC = ChatEvents::C_USERCONNECTED;
+			memcpy(&sendCurrentUsersBuffer[0], &eventC, sizeof(ChatEvents));
+			memcpy(&sendCurrentUsersBuffer[sizeof(ChatEvents)], &nameLenght, sizeof(unsigned int));
+			memcpy(&sendCurrentUsersBuffer[sizeof(ChatEvents) + sizeof(unsigned int)], socketToDelete.playerName.c_str(), sizeof(char) * nameLenght);
+
+			connectedSockets.erase(toDelete);
+			for (auto& connectedSocket : connectedSockets)	
+				send(connectedSocket.socket, sendCurrentUsersBuffer, sizeToSend, 0);
+
+			deletionSelected = false;
 		}
 
 		ImGui::End();
@@ -118,16 +158,16 @@ bool ModuleNetworkingServer::isListenSocket(SOCKET socket) const
 
 void ModuleNetworkingServer::onSocketConnected(SOCKET socket, const sockaddr_in &socketAddress)
 {
-	LOG("New socket connection detected\n");
-	// Add a new connected socket to the list
-	ConnectedSocket connectedSocket;
-	connectedSocket.socket = socket;
-	connectedSocket.address = socketAddress;
-	connectedSockets.push_back(connectedSocket);
-	addSocket(socket);
+LOG("New socket connection detected\n");
+// Add a new connected socket to the list
+ConnectedSocket connectedSocket;
+connectedSocket.socket = socket;
+connectedSocket.address = socketAddress;
+connectedSockets.push_back(connectedSocket);
+addSocket(socket);
 }
 
-void ModuleNetworkingServer::onSocketReceivedData(SOCKET socket, byte * data, uint32 recivedSize)
+void ModuleNetworkingServer::onSocketReceivedData(SOCKET socket, byte* data, uint32 recivedSize)
 {
 	ChatEvents incomingEvent;
 	unsigned int size = sizeof(ChatEvents);
@@ -171,6 +211,7 @@ void ModuleNetworkingServer::onSocketReceivedData(SOCKET socket, byte * data, ui
 		break;
 	case ModuleNetworking::C_MENSAGE:
 		std::string message(reinterpret_cast<const char*>(cursor));
+		LOG("Log message -> %s: %s", fromUser.c_str(), message.c_str());
 		for (auto& connectedSocket : connectedSockets)
 		{
 			if (connectedSocket.socket != socket)
@@ -190,11 +231,11 @@ void ModuleNetworkingServer::onSocketDisconnected(SOCKET socket)
 	// Remove the connected socket from the list
 	for (auto it = connectedSockets.begin(); it != connectedSockets.end(); ++it)
 	{
-		auto &connectedSocket = *it;
+		auto& connectedSocket = *it;
 		if (connectedSocket.socket == socket)
 		{
 			playerDisconnected = connectedSocket.playerName;
-			LOG("%s disconnected from server.\n", connectedSocket.playerName.c_str());
+			WLOG("%s disconnected from server.\n", connectedSocket.playerName.c_str());
 			connectedSockets.erase(it);
 			break;
 		}
@@ -212,5 +253,16 @@ void ModuleNetworkingServer::onSocketDisconnected(SOCKET socket)
 		for (auto it = connectedSockets.begin(); it != connectedSockets.end(); ++it)
 			send((*it).socket, sendNameDisconnectedBuffer, size, 0);
 	}
+}
+
+void ModuleNetworkingServer::DisconnectSocket(SOCKET s)
+{
+	for (auto iter = sockets.begin(); iter != sockets.end(); iter++)
+		if (*iter == s){
+			shutdown(s, 2);
+			closesocket(s);
+			sockets.erase(iter);
+			break;
+		}
 }
 

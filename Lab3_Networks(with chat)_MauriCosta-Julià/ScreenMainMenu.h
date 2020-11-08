@@ -4,6 +4,7 @@ class ScreenMainMenu : public Screen
 {
 public:
 	bool disconnectedFromServer = false;
+	bool kickedFromServer = false;
 
 private:
 

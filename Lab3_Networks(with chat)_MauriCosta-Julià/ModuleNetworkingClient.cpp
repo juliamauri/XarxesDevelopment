@@ -197,6 +197,7 @@ void ModuleNetworkingClient::onSocketReceivedData(SOCKET socket, byte * data, ui
 	{
 	case ModuleNetworking::C_USERCONNECTED:
 		chatMessages.push_back(fromUser + " connected to chat");
+	case ModuleNetworking::C_USERINCHAT: //when user was connected to server, we only fill the usersInChat without telling that user just connected to chat
 		usersInChat.push_back(fromUser);
 		break;
 	case ModuleNetworking::C_USERDISCONNECTED:

@@ -47,6 +47,7 @@ protected:
 
 	enum ChatEvents {
 		C_USERCONNECTED = 1,
+		C_USERINCHAT,
 		C_USERDISCONNECTED,
 		C_SERVERKICK,
 		C_MENSAGE

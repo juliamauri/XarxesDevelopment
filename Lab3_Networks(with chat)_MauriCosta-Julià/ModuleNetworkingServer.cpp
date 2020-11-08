@@ -200,7 +200,7 @@ void ModuleNetworkingServer::onSocketReceivedData(SOCKET socket, byte* data, uin
 				unsigned int nameLenght = connectedSocket.playerName.length();
 				unsigned int sizeToSend = sizeof(unsigned int) + (sizeof(char) * nameLenght) + sizeof(ChatEvents);
 				char* sendCurrentUsersBuffer = new char[sizeToSend];
-				ChatEvents eventC = ChatEvents::C_USERCONNECTED;
+				ChatEvents eventC = ChatEvents::C_USERINCHAT;
 				memcpy(&sendCurrentUsersBuffer[0], &eventC, sizeof(ChatEvents));
 				memcpy(&sendCurrentUsersBuffer[sizeof(ChatEvents)], &nameLenght, sizeof(unsigned int));
 				memcpy(&sendCurrentUsersBuffer[sizeof(ChatEvents) + sizeof(unsigned int)], connectedSocket.playerName.c_str(), sizeof(char) * nameLenght);
@@ -208,6 +208,7 @@ void ModuleNetworkingServer::onSocketReceivedData(SOCKET socket, byte* data, uin
 				send(socket, sendCurrentUsersBuffer, sizeToSend, 0);
 			}
 		}
+
 		break;
 	case ModuleNetworking::C_MENSAGE:
 		std::string message(reinterpret_cast<const char*>(cursor));

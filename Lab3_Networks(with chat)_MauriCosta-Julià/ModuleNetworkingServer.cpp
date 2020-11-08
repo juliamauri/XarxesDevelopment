@@ -211,7 +211,11 @@ void ModuleNetworkingServer::onSocketReceivedData(SOCKET socket, byte* data, uin
 
 		break;
 	case ModuleNetworking::C_MENSAGE:
-		std::string message(reinterpret_cast<const char*>(cursor));
+		unsigned int messageSize = 0;
+		size = sizeof(unsigned int);
+		memcpy(&messageSize, cursor, size);
+		cursor += size;
+		std::string message(reinterpret_cast<const char*>(cursor), messageSize);
 		LOG("Log message -> %s: %s", fromUser.c_str(), message.c_str());
 		for (auto& connectedSocket : connectedSockets)
 		{
@@ -222,8 +226,6 @@ void ModuleNetworkingServer::onSocketReceivedData(SOCKET socket, byte* data, uin
 		}
 		break;
 	}
-
-
 }
 
 void ModuleNetworkingServer::onSocketDisconnected(SOCKET socket)

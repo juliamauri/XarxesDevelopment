@@ -25,3 +25,16 @@ Subject of networking, repository based by litle programs using the Windows Sock
 * Logs everywhere:
   * Sockets error.
   * Information of connections/disconnections/messages.
+  
+#### Images
+* Example of a sesson
+
+![Example of a sesson](https://github.com/juliamauri/XarxesDevelopment/blob/main/Images/Chat1.PNG)
+
+* Example server kick user
+
+![Example server kick user](https://github.com/juliamauri/XarxesDevelopment/blob/main/Images/Chat2.PNG)
+
+* Example of list users (local and over internet)
+
+![Example of list users (local and over internet)](https://github.com/juliamauri/XarxesDevelopment/blob/main/Images/Chat3.PNG)

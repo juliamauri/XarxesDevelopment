@@ -216,9 +216,19 @@ void ModuleNetworkingServer::onUpdate()
 		}
 
 		bool sendPing = false;
+
 		// TODO(you): UDP virtual connection lab session
 		// Suma el temps del ultim ping enviat, si es supera (sendPing = true)
 		// PING_INTERVAL_SECONDS
+		
+		secondsSinceLastPingDelivered += PING_INTERVAL_SECONDS;
+		
+		if (secondsSinceLastPingDelivered > PING_INTERVAL_SECONDS)
+		{
+			secondsSinceLastPingDelivered = 0.0f;
+
+			sendPing = true;
+		}
 
 		for (ClientProxy &clientProxy : clientProxies)
 		{
@@ -227,11 +237,23 @@ void ModuleNetworkingServer::onUpdate()
 				// TODO(you): UDP virtual connection lab session
 				// Suma el temps de last packet recieved, si supera el timeout desconecta el client.
 				// DISCONNECT_TIMEOUT_SECONDS
+				clientProxy.secondsSinceLastClientPing += DISCONNECT_TIMEOUT_SECONDS;
 
+				if (clientProxy.secondsSinceLastClientPing > DISCONNECT_TIMEOUT_SECONDS)
+				{
+					clientProxy.secondsSinceLastClientPing = 0.0f;
+
+					clientProxy.connected = false;
+				}
 
 				//Envia un ping.
-				/*else*/if(sendPing){
-				
+				else if(sendPing){
+					OutputMemoryStream PingPacket;
+					PingPacket << PROTOCOL_ID;
+					PingPacket << ServerMessage::Ping;
+					sendPacket(PingPacket, clientProxy.address);
+
+					WLOG("Ping sent to client proxies.");
 				}
 
 				//"si un client da timeout, informar als altres clients de la seva desconexió" futures labs

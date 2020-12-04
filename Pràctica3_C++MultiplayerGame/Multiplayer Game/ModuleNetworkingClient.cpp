@@ -170,9 +170,33 @@ void ModuleNetworkingClient::onUpdate()
 		// Suma el temps de last packet recieved, si supera el timeout es desconecta.
 		// DISCONNECT_TIMEOUT_SECONDS
 
+		secondsSinceServerLastPing += Time.deltaTime;
+
+		if (secondsSinceServerLastPing > DISCONNECT_TIMEOUT_SECONDS)
+		{
+			secondsSinceServerLastPing = 0.0f;
+
+			state = ClientState::Stopped;
+			return;
+		}
+
 		// TODO(you): UDP virtual connection lab session
 		// Suma el temps del ultim ping enviat, si es supera, envia un ping.
 		// PING_INTERVAL_SECONDS
+
+		secondsSinceLastPingDelivered += Time.deltaTime;
+
+		if (secondsSinceLastPingDelivered > PING_INTERVAL_SECONDS)
+		{
+			secondsSinceLastPingDelivered = 0.0f;
+
+			OutputMemoryStream PingPacket;
+			PingPacket << PROTOCOL_ID;
+			PingPacket << ServerMessage::Ping;
+			sendPacket(PingPacket, serverAddress);
+
+			WLOG("Ping sent to server.");
+		}
 
 		// Process more inputs if there's space
 		if (inputDataBack - inputDataFront < ArrayCount(inputData))

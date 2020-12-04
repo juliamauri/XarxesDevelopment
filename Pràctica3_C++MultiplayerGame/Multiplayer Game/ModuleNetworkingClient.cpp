@@ -177,6 +177,7 @@ void ModuleNetworkingClient::onUpdate()
 			secondsSinceServerLastPing = 0.0f;
 
 			state = ClientState::Stopped;
+			disconnect();
 			return;
 		}
 

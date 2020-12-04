@@ -18,12 +18,14 @@ void ReplicationManagerServer::destroy(uint32 networkId)
 	replicationCommands.at(networkId).action = ReplicationAction::Destroy;
 }
 
-void ReplicationManagerServer::write(OutputMemoryStream& packet)
+bool ReplicationManagerServer::write(OutputMemoryStream& packet)
 {
+	bool ret = false;
 	for (auto command = replicationCommands.begin(); command != replicationCommands.end(); command++ ) {
-		
-		uint32 netID = (*command).first;
 		ReplicationAction action = (*command).second.action;
+		if (action == ReplicationAction::None) continue;
+
+		uint32 netID = (*command).first;
 
 		switch (action)
 		{ 
@@ -37,6 +39,7 @@ void ReplicationManagerServer::write(OutputMemoryStream& packet)
 			}
 
 			(*command).second.action = ReplicationAction::None;
+			ret = true;
 			break;
 		case ReplicationAction::Update:
 			packet << netID;
@@ -48,12 +51,15 @@ void ReplicationManagerServer::write(OutputMemoryStream& packet)
 			}
 
 			(*command).second.action = ReplicationAction::None;
+			ret = true;
 			break;
 		case ReplicationAction::Destroy:
 			packet << netID;
 			packet << action;
 			replicationCommands.erase(netID);
+			ret = true;
 			break;
 		}
 	}
+	return ret;
 }

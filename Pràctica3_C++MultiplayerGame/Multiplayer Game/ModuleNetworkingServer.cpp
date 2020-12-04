@@ -146,7 +146,7 @@ void ModuleNetworkingServer::onPacketReceived(const InputMemoryStream &packet, c
 					GameObject *gameObject = networkGameObjects[i];
 					
 					// TODO(you): World state replication lab session
-					if (gameObject->networkId == proxy->clientId) continue;
+					if (gameObject->networkId == proxy->gameObject->networkId) continue;
 					proxy->replicationServer.create(gameObject->networkId);
 
 				}
@@ -268,8 +268,9 @@ void ModuleNetworkingServer::onUpdate()
 				}
 				// TODO(you): World state replication lab session
 				OutputMemoryStream replicationPacket;
-				clientProxy.replicationServer.write(replicationPacket);
-				if(replicationPacket.GetSize() > 0) sendPacket(replicationPacket, clientProxy.address);
+				replicationPacket << PROTOCOL_ID;
+				replicationPacket << ServerMessage::Welcome;
+				if(clientProxy.replicationServer.write(replicationPacket)) sendPacket(replicationPacket, clientProxy.address);
 
 				// TODO(you): Reliability on top of UDP lab session
 			}

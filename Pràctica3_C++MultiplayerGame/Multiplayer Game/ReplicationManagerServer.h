@@ -11,7 +11,7 @@ public:
 	void update(uint32 networkId);
 	void destroy(uint32 networkId);
 
-	void write(OutputMemoryStream& packet);
+	bool write(OutputMemoryStream& packet);
 
 private:
 	std::unordered_map<uint32, ReplicationCommand> replicationCommands;

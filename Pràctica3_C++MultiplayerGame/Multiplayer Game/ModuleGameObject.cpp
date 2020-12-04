@@ -125,14 +125,18 @@ void Destroy(GameObject * gameObject, float delaySeconds)
 
 void GameObject::Serialize(OutputMemoryStream& packet)
 {
-	packet << position;
-	packet << size;
+	packet << position.x;
+	packet << position.y;
+	packet << size.x;
+	packet << size.y;
 	packet << angle;
 }
 
 void GameObject::DeSerialize(const InputMemoryStream& packet)
 {
-	packet >> position;
-	packet >> size;
+	packet >> position.x;
+	packet >> position.x;
+	packet >> size.x;
+	packet >> size.y;
 	packet >> angle;
 }

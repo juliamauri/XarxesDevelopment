@@ -1,4 +1,5 @@
 #include "Networks.h"
+#include "ModuleGameObject.h"
 
 bool ModuleGameObject::init()
 {
@@ -120,4 +121,18 @@ void Destroy(GameObject * gameObject)
 void Destroy(GameObject * gameObject, float delaySeconds)
 {
 	ModuleGameObject::Destroy(gameObject, delaySeconds);
+}
+
+void GameObject::Serialize(OutputMemoryStream& packet)
+{
+	packet << position;
+	packet << size;
+	packet << angle;
+}
+
+void GameObject::DeSerialize(const InputMemoryStream& packet)
+{
+	packet >> position;
+	packet >> size;
+	packet >> angle;
 }

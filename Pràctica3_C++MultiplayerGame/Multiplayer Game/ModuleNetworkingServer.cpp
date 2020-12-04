@@ -146,6 +146,9 @@ void ModuleNetworkingServer::onPacketReceived(const InputMemoryStream &packet, c
 					GameObject *gameObject = networkGameObjects[i];
 					
 					// TODO(you): World state replication lab session
+					if (gameObject->networkId == proxy->clientId) continue;
+					proxy->replicationServer.create(gameObject->networkId);
+
 				}
 
 				LOG("Message received: hello - from player %s", proxy->name.c_str());
@@ -263,8 +266,10 @@ void ModuleNetworkingServer::onUpdate()
 				{
 					clientProxy.gameObject = nullptr;
 				}
-
 				// TODO(you): World state replication lab session
+				OutputMemoryStream replicationPacket;
+				clientProxy.replicationServer.write(replicationPacket);
+				if(replicationPacket.GetSize() > 0) sendPacket(replicationPacket, clientProxy.address);
 
 				// TODO(you): Reliability on top of UDP lab session
 			}
@@ -402,11 +407,13 @@ GameObject * ModuleNetworkingServer::instantiateNetworkObject()
 	App->modLinkingContext->registerNetworkGameObject(gameObject);
 
 	// Notify all client proxies' replication manager to create the object remotely
+	uint32 netID = gameObject->networkId;
 	for (int i = 0; i < MAX_CLIENTS; ++i)
 	{
 		if (clientProxies[i].connected)
 		{
 			// TODO(you): World state replication lab session
+			clientProxies[i].replicationServer.create(netID);
 		}
 	}
 
@@ -416,11 +423,14 @@ GameObject * ModuleNetworkingServer::instantiateNetworkObject()
 void ModuleNetworkingServer::updateNetworkObject(GameObject * gameObject)
 {
 	// Notify all client proxies' replication manager to destroy the object remotely
+	uint32 netID = gameObject->networkId;
 	for (int i = 0; i < MAX_CLIENTS; ++i)
 	{
 		if (clientProxies[i].connected)
 		{
 			// TODO(you): World state replication lab session
+			clientProxies[i].replicationServer.update(netID);
+
 		}
 	}
 }
@@ -428,11 +438,13 @@ void ModuleNetworkingServer::updateNetworkObject(GameObject * gameObject)
 void ModuleNetworkingServer::destroyNetworkObject(GameObject * gameObject)
 {
 	// Notify all client proxies' replication manager to destroy the object remotely
+	uint32 netID = gameObject->networkId;
 	for (int i = 0; i < MAX_CLIENTS; ++i)
 	{
 		if (clientProxies[i].connected)
 		{
 			// TODO(you): World state replication lab session
+			clientProxies[i].replicationServer.destroy(netID);
 		}
 	}
 

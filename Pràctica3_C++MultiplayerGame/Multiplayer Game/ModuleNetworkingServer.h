@@ -53,6 +53,7 @@ private:
 		// TODO(you): UDP virtual connection lab session
 		float secondsSinceLastClientPing = 0.0f;
 		// TODO(you): World state replication lab session
+		ReplicationManagerServer replicationServer;
 		// TODO(you): Reliability on top of UDP lab session
 
 		uint32 nextExpectedInputSequenceNumber = 0;

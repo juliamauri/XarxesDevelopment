@@ -1,6 +1,8 @@
 #include "Networks.h"
 #include "ReplicationManagerServer.h"
 
+#include <stack>
+
 // TODO(you): World state replication lab session
 
 void ReplicationManagerServer::create(uint32 networkId)
@@ -21,6 +23,8 @@ void ReplicationManagerServer::destroy(uint32 networkId)
 bool ReplicationManagerServer::write(OutputMemoryStream& packet)
 {
 	bool ret = false;
+	std::stack<uint32> toDelete;
+
 	for (auto command = replicationCommands.begin(); command != replicationCommands.end(); command++ ) {
 		ReplicationAction action = (*command).second.action;
 		if (action == ReplicationAction::None) continue;
@@ -36,7 +40,7 @@ bool ReplicationManagerServer::write(OutputMemoryStream& packet)
 			{
 				GameObject* go = App->modLinkingContext->getNetworkGameObject(netID);
 				Texture* tex = go->sprite->texture;
-				uint32 goType = 4;
+				uint32 goType = 5;
 				if (tex == App->modResources->spacecraft1)
 					goType = 0;
 				else if (tex == App->modResources->spacecraft2)
@@ -72,10 +76,16 @@ bool ReplicationManagerServer::write(OutputMemoryStream& packet)
 		case ReplicationAction::Destroy:
 			packet << netID;
 			packet << action;
-			replicationCommands.erase(netID);
+			toDelete.push(netID);
 			ret = true;
 			break;
 		}
 	}
+
+	while (!toDelete.empty()) {
+		replicationCommands.erase(toDelete.top());
+		toDelete.pop();
+	}
+
 	return ret;
 }

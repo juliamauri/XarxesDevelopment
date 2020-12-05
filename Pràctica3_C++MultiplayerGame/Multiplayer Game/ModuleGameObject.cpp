@@ -135,7 +135,7 @@ void GameObject::Serialize(OutputMemoryStream& packet)
 void GameObject::DeSerialize(const InputMemoryStream& packet)
 {
 	packet >> position.x;
-	packet >> position.x;
+	packet >> position.y;
 	packet >> size.x;
 	packet >> size.y;
 	packet >> angle;

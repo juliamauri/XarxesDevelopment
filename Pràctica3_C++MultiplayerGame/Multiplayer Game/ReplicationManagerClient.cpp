@@ -19,18 +19,18 @@ void ReplicationManagerClient::read(const InputMemoryStream& packet)
 		{
 		case ReplicationAction::Create:
 		{
-			uint32 spaceshipType;
-			packet >> spaceshipType;
+			uint32 goType;
+			packet >> goType;
 
 			GameObject* go = ModuleGameObject::Instantiate();
-			if(spaceshipType < 3){
+			if(goType < 3){
 				// Create sprite
 				go->sprite = App->modRender->addSprite(go);
 				go->sprite->order = 5;
-				if (spaceshipType == 0) {
+				if (goType == 0) {
 					go->sprite->texture = App->modResources->spacecraft1;
 				}
-				else if (spaceshipType == 1) {
+				else if (goType == 1) {
 					go->sprite->texture = App->modResources->spacecraft2;
 				}
 				else {
@@ -47,8 +47,27 @@ void ReplicationManagerClient::read(const InputMemoryStream& packet)
 				go->behaviour->isServer = false;
 			
 			}
+			else if (goType == 3) {
+				go->sprite = App->modRender->addSprite(go);
+				go->sprite->order = 3;
+				go->sprite->texture = App->modResources->laser;
+
+				Laser* laserBehaviour = App->modBehaviour->addLaser(go);
+				laserBehaviour->isServer = false;
+			}
+			else if(goType == 4){
+				go->sprite = App->modRender->addSprite(go);
+				go->sprite->texture = App->modResources->explosion1;
+				go->sprite->order = 100;
+
+				go->animation = App->modRender->addAnimation(go);
+				go->animation->clip = App->modResources->explosionClip;
+
+				App->modSound->playAudioClip(App->modResources->audioClipExplosion);
+			}
 			
 			App->modLinkingContext->registerNetworkGameObjectWithNetworkId(go, netID);
+			packet >> go->tag;
 			go->DeSerialize(packet);
 			break;
 		}

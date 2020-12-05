@@ -35,15 +35,21 @@ bool ReplicationManagerServer::write(OutputMemoryStream& packet)
 
 			{
 				GameObject* go = App->modLinkingContext->getNetworkGameObject(netID);
-				uint32 spaceshipType = 4;
-				if (go->sprite->texture == App->modResources->spacecraft1) 
-					spaceshipType = 0;
-				else if (go->sprite->texture == App->modResources->spacecraft2) 
-					spaceshipType = 1;
-				else if (go->sprite->texture == App->modResources->spacecraft3)
-					spaceshipType = 2;
+				Texture* tex = go->sprite->texture;
+				uint32 goType = 4;
+				if (tex == App->modResources->spacecraft1)
+					goType = 0;
+				else if (tex == App->modResources->spacecraft2)
+					goType = 1;
+				else if (tex == App->modResources->spacecraft3)
+					goType = 2;
+				else if (tex == App->modResources->laser) 
+					goType = 3;
+				else if (tex == App->modResources->explosion1)
+					goType = 4;
 					
-				packet << spaceshipType;
+				packet << goType;
+				packet << go->tag;
 
 				go->Serialize(packet);
 			}

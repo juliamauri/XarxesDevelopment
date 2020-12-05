@@ -135,6 +135,9 @@ void ModuleNetworkingClient::onPacketReceived(const InputMemoryStream &packet, c
 			secondsSinceServerLastPing = 0.0f;
 
 		}
+		else if (message == ServerMessage::InputConfirmation) {
+			packet >> inputDataFront;
+		}
 		else
 		{
 			// TODO(you): World state replication lab session
@@ -227,7 +230,7 @@ void ModuleNetworkingClient::onUpdate()
 			packet << PROTOCOL_ID;
 			packet << ClientMessage::Input;
 
-			// TODO(you): Reliability on top of UDP lab session
+			// TODO(you): Input Part | Reliability on top of UDP lab session
 
 			for (uint32 i = inputDataFront; i < inputDataBack; ++i)
 			{
@@ -237,9 +240,6 @@ void ModuleNetworkingClient::onUpdate()
 				packet << inputPacketData.verticalAxis;
 				packet << inputPacketData.buttonBits;
 			}
-
-			// Clear the queue
-			inputDataFront = inputDataBack;
 
 			sendPacket(packet, serverAddress);
 		}

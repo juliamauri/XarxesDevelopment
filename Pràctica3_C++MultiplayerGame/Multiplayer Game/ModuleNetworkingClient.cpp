@@ -138,15 +138,13 @@ void ModuleNetworkingClient::onPacketReceived(const InputMemoryStream &packet, c
 		else if (message == ServerMessage::InputConfirmation) {
 			packet >> inputDataFront;
 		}
-		else
+		else if(message == ServerMessage::WorldDelivery)
 		{
-			// TODO(you): World state replication lab session
-			replicationClient.read(packet);
+			// TODO(you): Reliability on top of UDP lab session
+			if(deliveryManager.processSequencerNumber(packet))
+				// TODO(you): World state replication lab session
+				replicationClient.read(packet);
 		}
-
-		
-
-		// TODO(you): Reliability on top of UDP lab session
 	}
 }
 
@@ -244,6 +242,15 @@ void ModuleNetworkingClient::onUpdate()
 			sendPacket(packet, serverAddress);
 		}
 
+		if (deliveryManager.hasSequenceNumberPendingAck()) {
+			OutputMemoryStream packet;
+			packet << PROTOCOL_ID;
+			packet << ClientMessage::DeliveryConfirmation;
+			deliveryManager.writeSequenceNumbersPendingAck(packet);
+			sendPacket(packet, serverAddress);
+		}
+		
+
 		// TODO(you): Latency management lab session
 
 		// Update camera for player
@@ -255,6 +262,7 @@ void ModuleNetworkingClient::onUpdate()
 		else
 		{
 			// This means that the player has been destroyed (e.g. killed)
+
 		}
 	}
 }

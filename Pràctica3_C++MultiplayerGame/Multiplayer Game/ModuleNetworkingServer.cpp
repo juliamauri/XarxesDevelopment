@@ -204,7 +204,10 @@ void ModuleNetworkingServer::onPacketReceived(const InputMemoryStream &packet, c
 				//Update last ping recived from client
 				proxy->secondsSinceLastClientPing = 0.0f;
 			}
-		}		
+		}
+		else if (message == ClientMessage::DeliveryConfirmation) {
+			proxy->deliverManager.processAckdSequenceNumbers(packet, &proxy->replicationServer);
+		}
 	}
 }
 
@@ -274,13 +277,19 @@ void ModuleNetworkingServer::onUpdate()
 				{
 					clientProxy.gameObject = nullptr;
 				}
-				// TODO(you): World state replication lab session
-				OutputMemoryStream replicationPacket;
-				replicationPacket << PROTOCOL_ID;
-				replicationPacket << ServerMessage::Welcome;
-				if(clientProxy.replicationServer.write(replicationPacket)) sendPacket(replicationPacket, clientProxy.address);
 
+				clientProxy.deliverManager.processTiemdOutPackets(&clientProxy.replicationServer);
+				clientProxy.replicationServer.processActions(&clientProxy.deliverManager);
 				// TODO(you): Reliability on top of UDP lab session
+				if (clientProxy.deliverManager.hasSequenceNumberPending()) {
+					OutputMemoryStream worldDeliveryPacket;
+					worldDeliveryPacket << PROTOCOL_ID;
+					worldDeliveryPacket << ServerMessage::WorldDelivery;
+					clientProxy.deliverManager.writeAllSequenceNumber(worldDeliveryPacket);
+					clientProxy.replicationServer.write(worldDeliveryPacket);
+					// TODO(you): World state replication lab session
+					sendPacket(worldDeliveryPacket, clientProxy.address);
+				}
 			}
 		}
 	}
@@ -439,7 +448,6 @@ void ModuleNetworkingServer::updateNetworkObject(GameObject * gameObject)
 		{
 			// TODO(you): World state replication lab session
 			clientProxies[i].replicationServer.update(netID);
-
 		}
 	}
 }

@@ -3,6 +3,7 @@
 // TODO(you): Reliability on top of UDP lab session
 
 class DeliveryManager;
+class ReplicationManagerServer;
 
 class DeliveryDelegate
 {
@@ -10,25 +11,16 @@ public:
 
 	virtual void onDeliverySuccess(DeliveryManager* deliveryManager) = 0;
 	virtual void onDeliveryFailure(DeliveryManager* deliveryManager) = 0;
-
-	virtual void Get(OutputMemoryStream& packet) = 0;
 };
 
 class DeliveryReplication : public DeliveryDelegate
 {
 public:
-	DeliveryReplication(OutputMemoryStream& packet) : deliveryPacket(packet) {}
+	DeliveryReplication() {}
 	~DeliveryReplication() {}
 
 	void onDeliverySuccess(DeliveryManager* deliveryManager)override;
 	void onDeliveryFailure(DeliveryManager* deliveryManager)override;
-
-	void Get(OutputMemoryStream& packet) override{
-		packet.Write(deliveryPacket.GetBufferPtr(), deliveryPacket.GetSize());
-	}
-
-private:
-	OutputMemoryStream deliveryPacket;
 };
 
 struct Delivery
@@ -52,10 +44,10 @@ public:
 
 	//server
 	bool hasSequenceNumberPending()const;
-	Delivery* createDelivery(OutputMemoryStream& packet);
+	Delivery* createDelivery();
 	void writeAllSequenceNumber(OutputMemoryStream& packet);
-	void processAckdSequenceNumbers(const InputMemoryStream& packet);
-	void processTiemdOutPackets();
+	void processAckdSequenceNumbers(const InputMemoryStream& packet, ReplicationManagerServer* replicationServer);
+	void processTiemdOutPackets(ReplicationManagerServer* replicationServer);
 
 private:
 	//sender side

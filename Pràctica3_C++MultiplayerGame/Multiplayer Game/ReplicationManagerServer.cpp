@@ -20,22 +20,23 @@ void ReplicationManagerServer::destroy(uint32 networkId)
 	replicationCommands.at(networkId).action = ReplicationAction::Destroy;
 }
 
-bool ReplicationManagerServer::write(OutputMemoryStream& packet)
+void ReplicationManagerServer::processActions(DeliveryManager* delivery)
 {
-	bool ret = false;
 	std::stack<uint32> toDelete;
 
-	for (auto command = replicationCommands.begin(); command != replicationCommands.end(); command++ ) {
+	for (auto command = replicationCommands.begin(); command != replicationCommands.end(); command++) {
 		ReplicationAction action = (*command).second.action;
 		if (action == ReplicationAction::None) continue;
 
+		delivery->createDelivery();
+		OutputMemoryStream savePacket;
 		uint32 netID = (*command).first;
 
 		switch (action)
-		{ 
+		{
 		case ReplicationAction::Create:
-			packet << netID;
-			packet << action;
+			savePacket << netID;
+			savePacket << action;
 
 			{
 				GameObject* go = App->modLinkingContext->getNetworkGameObject(netID);
@@ -47,45 +48,53 @@ bool ReplicationManagerServer::write(OutputMemoryStream& packet)
 					goType = 1;
 				else if (tex == App->modResources->spacecraft3)
 					goType = 2;
-				else if (tex == App->modResources->laser) 
+				else if (tex == App->modResources->laser)
 					goType = 3;
 				else if (tex == App->modResources->explosion1)
 					goType = 4;
-					
-				packet << goType;
-				packet << go->tag;
 
-				go->Serialize(packet);
+				savePacket << goType;
+				savePacket << go->tag;
+
+				go->Serialize(savePacket);
 			}
 
 			(*command).second.action = ReplicationAction::None;
-			ret = true;
 			break;
 		case ReplicationAction::Update:
-			packet << netID;
-			packet << action;
+			savePacket << netID;
+			savePacket << action;
 
 			{
 				GameObject* go = App->modLinkingContext->getNetworkGameObject(netID);
-				go->Serialize(packet);
+				go->Serialize(savePacket);
 			}
 
 			(*command).second.action = ReplicationAction::None;
-			ret = true;
 			break;
 		case ReplicationAction::Destroy:
-			packet << netID;
-			packet << action;
+			savePacket << netID;
+			savePacket << action;
 			toDelete.push(netID);
-			ret = true;
 			break;
 		}
+
+		actionsToWrite.push_back(savePacket);
 	}
 
 	while (!toDelete.empty()) {
 		replicationCommands.erase(toDelete.top());
 		toDelete.pop();
 	}
+}
 
-	return ret;
+void ReplicationManagerServer::write(OutputMemoryStream& packet)
+{
+	for (auto actionW = actionsToWrite.begin(); actionW != actionsToWrite.end(); actionW++)
+		packet.Write(actionW->GetBufferPtr(), actionW->GetSize());
+}
+
+void ReplicationManagerServer::popFrontAction()
+{
+	actionsToWrite.pop_front();
 }

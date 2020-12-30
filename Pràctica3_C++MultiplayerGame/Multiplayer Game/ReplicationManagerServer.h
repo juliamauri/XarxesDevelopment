@@ -11,9 +11,12 @@ public:
 	void update(uint32 networkId);
 	void destroy(uint32 networkId);
 
-	bool write(OutputMemoryStream& packet);
+	void processActions( DeliveryManager* delivery);
+	void write(OutputMemoryStream& packet);
+
+	void popFrontAction();
 
 private:
 	std::unordered_map<uint32, ReplicationCommand> replicationCommands;
-
+	std::list<OutputMemoryStream> actionsToWrite;
 };

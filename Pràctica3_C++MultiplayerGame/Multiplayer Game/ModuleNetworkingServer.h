@@ -34,8 +34,6 @@ private:
 
 	void onDisconnect() override;
 
-
-
 	//////////////////////////////////////////////////////////////////////
 	// Client proxies
 	//////////////////////////////////////////////////////////////////////
@@ -55,6 +53,7 @@ private:
 		// TODO(you): World state replication lab session
 		ReplicationManagerServer replicationServer;
 		// TODO(you): Reliability on top of UDP lab session
+		DeliveryManager deliverManager;
 
 		uint32 nextExpectedInputSequenceNumber = 0;
 		InputController gamepad;

@@ -39,7 +39,6 @@ void DeliveryManager::processTiemdOutPackets(ReplicationManagerServer* replicati
 		iter->dispatchTime += Time.deltaTime;
 		if(iter->dispatchTime > PACKET_DELIVERY_TIMEOUT_SECONDS)
 		{
-			replicationServer->popFrontAction();
 			iter->dispatchTime = 0.0;
 			iter->delegate->onDeliveryFailure(this);
 		}
@@ -94,7 +93,7 @@ Delivery* DeliveryManager::createDelivery()
 	newDelivery.sequenceNumber = next_sequence_number++;
 	newDelivery.delegate = static_cast<DeliveryDelegate*>(new DeliveryReplication());
 	pendingDeliveries.push_back(newDelivery);
-	return &pendingDeliveries[newDelivery.sequenceNumber];
+	return &pendingDeliveries[pendingDeliveries.size() - 1];
 }
 
 void DeliveryManager::writeAllSequenceNumber(OutputMemoryStream& packet)

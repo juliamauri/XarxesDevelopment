@@ -30,9 +30,7 @@ void ScreenGame::writeScoresPacket(OutputMemoryStream& packet)
 		packet << spaceType;
 		uint32 score = std::get<2>(currentScoreBoard.scores[i]);
 		packet << score;
-		currentScoreBoard.scores.push_back(std::make_tuple(playerName, spaceType, score));
 	}
-
 
 	packet << currentScoreBoard.timeRemaining;
 	packet << currentScoreBoard.mState;

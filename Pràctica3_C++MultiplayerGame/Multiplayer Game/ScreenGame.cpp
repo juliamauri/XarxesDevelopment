@@ -193,6 +193,13 @@ void ScreenGame::gui()
 				ImGui::Separator();
 				ImGui::Text("You were killed. Respawning in %.f", RESPAWN_PLAYER - timeToRespawn);
 			}
+
+			if (currentScoreBoard.mState == End)
+			{
+				ImGui::Text("");
+				ImGui::Separator();
+				ImGui::Text("The winner is %s with %u kills", std::get<0>(currentScoreBoard.scores[winnerID]).c_str(), std::get<2>(currentScoreBoard.scores[winnerID]));
+			}
 			
 			ImGui::Text("");
 			ImGui::Separator();
@@ -202,12 +209,6 @@ void ScreenGame::gui()
 			for (int i = 0; i < currentScoreBoard.scores.size(); i++)
 			{
 				ImGui::Text("%s  -  %u", std::get<0>(currentScoreBoard.scores[i]).c_str(), std::get<2>(currentScoreBoard.scores[i]));
-			}
-
-			if (currentScoreBoard.mState == End)
-			{
-				ImGui::Separator();
-				ImGui::Text("The winner is: %s with %u kills", std::get<0>(currentScoreBoard.scores[winnerID]).c_str(), std::get<2>(currentScoreBoard.scores[winnerID]));
 			}
 		}
 		ImGui::End();

@@ -89,6 +89,13 @@ void ReplicationManagerClient::read(const InputMemoryStream& packet)
 			GameObject* go = App->modLinkingContext->getNetworkGameObject(netID);
 			go->DeSerialize(packet);
 			go->state = GameObject::State::UPDATING;
+
+			bool isSpaceCraft;
+			packet >> isSpaceCraft;
+			if (isSpaceCraft) {
+				Spaceship* spaceCraft = dynamic_cast<Spaceship*>(go->behaviour);
+				packet >> spaceCraft->hitPoints;
+			}
 			break;
 		}
 		case ReplicationAction::Destroy:

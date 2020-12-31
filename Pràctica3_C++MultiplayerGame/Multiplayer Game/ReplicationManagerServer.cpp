@@ -68,6 +68,21 @@ void ReplicationManagerServer::processActions(DeliveryManager* delivery)
 			{
 				GameObject* go = App->modLinkingContext->getNetworkGameObject(netID);
 				go->Serialize(savePacket);
+				Texture* tex = go->sprite->texture;
+				bool isSpaceCraft = false;
+				if (tex == App->modResources->spacecraft1)
+					isSpaceCraft = true;
+				else if (tex == App->modResources->spacecraft2)
+					isSpaceCraft = true;
+				else if (tex == App->modResources->spacecraft3)
+					isSpaceCraft = true;
+
+				savePacket << isSpaceCraft;
+				if (isSpaceCraft) {
+					Spaceship* spaceCraft = dynamic_cast<Spaceship*>(go->behaviour);
+					savePacket << spaceCraft->hitPoints;
+				}
+				
 			}
 
 			(*command).second.action = ReplicationAction::None;

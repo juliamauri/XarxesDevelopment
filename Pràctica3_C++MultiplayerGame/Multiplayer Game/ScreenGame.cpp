@@ -1,10 +1,29 @@
 
 #include "Networks.h"
+#include "ScreenGame.h"
 
 GameObject *spaceTopLeft = nullptr;
 GameObject *spaceTopRight = nullptr;
 GameObject *spaceBottomLeft = nullptr;
 GameObject *spaceBottomRight = nullptr;
+
+void ScreenGame::onPacketRecieved(InputMemoryStream& packet)
+{
+	uint32 totalScores;
+	packet >> totalScores;
+
+	for (uint32 i = 0; i < totalScores; i++)
+	{
+		std::string playerName;
+		packet >> playerName;
+		uint32 score;
+		packet >> score;
+		currentScoreBoard.scores.push_back({ playerName, score });
+	}
+
+	packet >> currentScoreBoard.timeRemaining;
+	packet >> currentScoreBoard.mState;
+}
 
 void ScreenGame::enable()
 {
@@ -60,6 +79,24 @@ void ScreenGame::update()
 
 void ScreenGame::gui()
 {
+	if (!isServer)
+	{
+		bool scoreBoardActive = currentScoreBoard.mState != End;
+		if (ImGui::Begin("SoreBoard", &scoreBoardActive))
+		{
+			//Time Remaining
+			//Kill Score
+		}
+		ImGui::End();
+
+		bool finalScoreBoard = currentScoreBoard.mState == End;
+		if (ImGui::Begin("Final Score", &finalScoreBoard))
+		{
+			//Time Remaining to next match
+			//Total Kill Score
+		}
+		ImGui::End();
+	}
 }
 
 void ScreenGame::disable()

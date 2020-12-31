@@ -57,11 +57,9 @@ void DeliveryManager::processTiemdOutPackets(ReplicationManagerServer* replicati
 	}
 }
 
-bool DeliveryManager::processSequencerNumber(const InputMemoryStream& packet)
+bool DeliveryManager::processSequencerNumber(const InputMemoryStream& packet, float& timeSequence)
 {
-	static float resetNextExoectedTime = 0.0f;
-	static float resetNextExoectedTimer = 2.f;
-	resetNextExoectedTime = +Time.deltaTime;
+	static float resetNextExpectedTimer = 2.f;
 
 	bool ret = false;
 	uint32 totalSequenceN;
@@ -76,8 +74,8 @@ bool DeliveryManager::processSequencerNumber(const InputMemoryStream& packet)
 			next_expected_number++;
 			ret = true;
 		}
-		else if (resetNextExoectedTime > resetNextExoectedTimer) {
-			resetNextExoectedTime = 0.0f;
+		else if (timeSequence > resetNextExpectedTimer) {
+			timeSequence = 0.0f;
 			next_expected_number = sequenceNumber;
 			ret = true;
 		}

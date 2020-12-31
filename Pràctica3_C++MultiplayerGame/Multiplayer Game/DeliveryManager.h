@@ -38,7 +38,7 @@ public:
 
 	//client
 	bool hasSequenceNumberPendingAck()const;
-	bool processSequencerNumber(const InputMemoryStream& packet);
+	bool processSequencerNumber(const InputMemoryStream& packet, float& timeSequence);
 
 	void writeSequenceNumbersPendingAck(OutputMemoryStream& packet);
 

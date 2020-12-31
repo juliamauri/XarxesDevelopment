@@ -141,7 +141,7 @@ void ModuleNetworkingClient::onPacketReceived(const InputMemoryStream &packet, c
 		else if(message == ServerMessage::WorldDelivery)
 		{
 			// TODO(you): Reliability on top of UDP lab session
-			if(deliveryManager.processSequencerNumber(packet))
+			if(deliveryManager.processSequencerNumber(packet, timeToResetNextExpected))
 				// TODO(you): World state replication lab session
 				replicationClient.read(packet);
 		}
@@ -172,6 +172,8 @@ void ModuleNetworkingClient::onUpdate()
 	}
 	else if (state == ClientState::Connected)
 	{
+		timeToResetNextExpected += Time.deltaTime;
+
 		// TODO(you): UDP virtual connection lab session
 		// Suma el temps de last packet recieved, si supera el timeout es desconecta.
 		// DISCONNECT_TIMEOUT_SECONDS

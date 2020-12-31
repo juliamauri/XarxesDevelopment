@@ -16,9 +16,12 @@ Game loop
 * The match's duration is 2 minutes.
 * Once the match is done, the Final Score lasts for 20 seconds, and goes back to the 10 second countdown to start another match.
 
-F1 - Toggle UI invisibility
-AWSD - Movement of the spaceship
-Space key - Shoot
+* F1 - Toggle UI invisibility
+* Down arrow key - Move forward
+* AW - Rotate the spaceship
+* Left arrow key - Shoot
+
+(Note: the control scheme was like this since the start and we haven't been able to change it.)
 
 ### Contents
 * It admits a certain number of players. - Completely achieved

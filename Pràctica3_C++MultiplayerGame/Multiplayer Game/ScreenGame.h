@@ -39,7 +39,7 @@ private:
 	bool respawn = false;
 	float timeToRespawn = 0.0f;
 
-	std::vector<uint32> winnersID;
+	std::vector<std::string> winnersID;
 	uint32 maximumPoints;
 
 	void enable() override;

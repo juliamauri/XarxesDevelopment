@@ -138,22 +138,22 @@ void ScreenGame::update()
 				case ScreenGame::MatchState::Running:
 					//Notify To Stop
 					currentScoreBoard.timeRemaining = TIME_NEXT_MATCH;
-					currentScoreBoard.mState = ScreenGame::MatchState::End;
+					 
+					maximumPoints = 0;
+					winnersID.clear();
+					for (uint32 i = 0; i < currentScoreBoard.scores.size(); i++)
 					{
-						maximumPoints = 0;
-						winnersID.clear();
-						for (uint32 i = 0; i < currentScoreBoard.scores.size(); i++)
-						{
-							uint32 score = std::get<2>(currentScoreBoard.scores[i]);
-							if (score > maximumPoints) {
-								maximumPoints = score;
-								winnersID.clear();
-								winnersID.push_back(i);
-							}
-							else if (score == maximumPoints)
-								winnersID.push_back(i);
+						uint32 score = std::get<2>(currentScoreBoard.scores[i]);
+						if (score > maximumPoints) {
+							maximumPoints = score;
+							winnersID.clear();
+							winnersID.push_back(std::get<0>(currentScoreBoard.scores[i]));
 						}
+						else if (score == maximumPoints)
+							winnersID.push_back(std::get<0>(currentScoreBoard.scores[i]));
 					}
+
+					currentScoreBoard.mState = ScreenGame::MatchState::End;
 					break;
 				case ScreenGame::MatchState::End:
 					//Reset ScoreBoard
@@ -209,7 +209,7 @@ void ScreenGame::gui()
 				{
 					ImGui::Text("");
 					ImGui::Separator();
-					ImGui::Text("The winner is %s with %u kills", std::get<0>(currentScoreBoard.scores[winnersID[0]]).c_str(), std::get<2>(currentScoreBoard.scores[winnersID[0]]));
+					ImGui::Text("The winner is %s with %u kills", winnersID[0].c_str(), maximumPoints);
 				}
 				else
 				{
@@ -218,7 +218,7 @@ void ScreenGame::gui()
 					ImGui::Text("The winners are\n");
 					for (auto winner : winnersID)
 					{
-						ImGui::Text("%s\n", std::get<0>(currentScoreBoard.scores[winnersID[winner]]).c_str());
+						ImGui::Text("%s\n", winner.c_str());
 					}
 					ImGui::Text("with %u kills", maximumPoints);
 				}

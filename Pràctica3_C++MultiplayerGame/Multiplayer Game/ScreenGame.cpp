@@ -140,7 +140,7 @@ void ScreenGame::update()
 					currentScoreBoard.timeRemaining = TIME_NEXT_MATCH;
 					currentScoreBoard.mState = ScreenGame::MatchState::End;
 					{
-						uint32 maximumPoints = 0;
+						maximumPoints = 0;
 						winnersID.clear();
 						for (uint32 i = 0; i < currentScoreBoard.scores.size(); i++)
 						{
@@ -220,7 +220,7 @@ void ScreenGame::gui()
 					{
 						ImGui::Text("%s\n", std::get<0>(currentScoreBoard.scores[winnersID[winner]]).c_str());
 					}
-					ImGui::Text("with %u kills", std::get<2>(currentScoreBoard.scores[winnersID[0]]));
+					ImGui::Text("with %u kills", maximumPoints);
 				}
 			}
 			

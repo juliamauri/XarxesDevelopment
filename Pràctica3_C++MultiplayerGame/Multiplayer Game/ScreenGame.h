@@ -40,6 +40,7 @@ private:
 	float timeToRespawn = 0.0f;
 
 	std::vector<uint32> winnersID;
+	uint32 maximumPoints;
 
 	void enable() override;
 

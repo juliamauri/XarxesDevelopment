@@ -7,7 +7,7 @@ GameObject *spaceTopRight = nullptr;
 GameObject *spaceBottomLeft = nullptr;
 GameObject *spaceBottomRight = nullptr;
 
-void ScreenGame::AddPlayer(const char* name, uint32 spaceType)
+void ScreenGame::AddPlayer(const char* name, uint8 spaceType)
 {
 	currentScoreBoard.scores.push_back(std::make_tuple(name, spaceType, 0));
 }
@@ -26,7 +26,7 @@ void ScreenGame::writeScoresPacket(OutputMemoryStream& packet)
 	{
 		std::string playerName = std::get<0>(currentScoreBoard.scores[i]);
 		packet << playerName;
-		uint32 spaceType = std::get<1>(currentScoreBoard.scores[i]);
+		uint8 spaceType = std::get<1>(currentScoreBoard.scores[i]);
 		packet << spaceType;
 		uint32 score = std::get<2>(currentScoreBoard.scores[i]);
 		packet << score;
@@ -47,7 +47,7 @@ void ScreenGame::onPacketRecieved(const InputMemoryStream& packet)
 	{
 		std::string playerName;
 		packet >> playerName;
-		uint32 spaceType;
+		uint8 spaceType;
 		packet >> spaceType;
 		uint32 score;
 		packet >> score;
@@ -126,11 +126,11 @@ void ScreenGame::update()
 				case ScreenGame::MatchState::End:
 					//Reset ScoreBoard
 					currentScoreBoard.timeRemaining = TIME_STARTING_MATCH;
-					std::vector<std::tuple<std::string, uint32, uint32>> resetScores;
+					std::vector<std::tuple<std::string, uint8, uint32>> resetScores;
 					for (uint32 i = 0; i < currentScoreBoard.scores.size(); i++)
 					{
 						std::string playerName = std::get<0>(currentScoreBoard.scores[i]);
-						uint32 spaceType = std::get<1>(currentScoreBoard.scores[i]);
+						uint8 spaceType = std::get<1>(currentScoreBoard.scores[i]);
 						uint32 score = std::get<2>(currentScoreBoard.scores[i]);
 						resetScores.push_back(std::make_tuple(playerName, spaceType, 0));
 					}

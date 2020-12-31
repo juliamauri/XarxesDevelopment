@@ -19,7 +19,7 @@ public:
 	const char *playerName = "player";
 	uint8 spaceshipType = 0;
 
-	void AddPlayer(const char* name, uint32 spaceType);
+	void AddPlayer(const char* name, uint8 spaceType);
 	MatchState GetState()const;
 
 	void writeScoresPacket(OutputMemoryStream& packet);
@@ -28,7 +28,7 @@ public:
 private:
 
 	struct ScoreBoard {
-		std::vector<std::tuple<std::string, uint32, uint32>> scores;
+		std::vector<std::tuple<std::string, uint8, uint32>> scores;
 		float timeRemaining = TIME_STARTING_MATCH;
 		MatchState mState = Waiting;
 	};

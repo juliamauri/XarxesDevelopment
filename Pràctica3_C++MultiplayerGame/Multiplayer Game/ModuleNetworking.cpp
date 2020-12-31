@@ -9,6 +9,7 @@
 
 void ModuleNetworking::disconnect()
 {
+	if (!isServer()) App->modNetClient->clear();
 	setEnabled(false);
 }
 

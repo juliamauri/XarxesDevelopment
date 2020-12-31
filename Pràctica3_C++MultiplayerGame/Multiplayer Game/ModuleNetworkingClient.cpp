@@ -18,6 +18,12 @@ void ModuleNetworkingClient::setPlayerInfo(const char * pPlayerName, uint8 pSpac
 	spaceshipType = pSpaceshipType;
 }
 
+void ModuleNetworkingClient::clear()
+{
+	replicationClient.clear();
+	deliveryManager.clear();
+}
+
 
 
 //////////////////////////////////////////////////////////////////////
@@ -282,8 +288,6 @@ void ModuleNetworkingClient::onUpdate()
 
 void ModuleNetworkingClient::onConnectionReset(const sockaddr_in & fromAddress)
 {
-	replicationClient.clear();
-	deliveryManager.clear();
 	disconnect();
 }
 

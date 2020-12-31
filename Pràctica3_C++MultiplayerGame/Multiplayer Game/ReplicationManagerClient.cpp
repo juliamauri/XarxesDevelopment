@@ -87,6 +87,20 @@ void ReplicationManagerClient::read(const InputMemoryStream& packet)
 		case ReplicationAction::Update:
 		{
 			GameObject* go = App->modLinkingContext->getNetworkGameObject(netID);
+			if (go == nullptr)
+			{
+				GameObject dummy;
+
+				dummy.DeSerialize(packet);
+
+				bool isSpaceCraft;
+				packet >> isSpaceCraft;
+				if (isSpaceCraft) {
+					uint8 hitpoints;
+					packet >> hitpoints;
+				}
+				continue;
+			}
 			go->DeSerialize(packet);
 			go->state = GameObject::State::UPDATING;
 

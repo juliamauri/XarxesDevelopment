@@ -56,6 +56,9 @@ void ScreenGame::onPacketRecieved(const InputMemoryStream& packet)
 
 	packet >> currentScoreBoard.timeRemaining;
 	packet >> currentScoreBoard.mState;
+
+	packet >> respawn;
+	packet >> timeToRespawn;
 }
 
 void ScreenGame::enable()

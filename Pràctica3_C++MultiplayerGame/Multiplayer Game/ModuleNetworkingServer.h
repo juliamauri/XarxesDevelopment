@@ -48,6 +48,7 @@ private:
 		uint8 spaceShipType;
 		std::string name;
 		GameObject *gameObject = nullptr;
+		float respawn = 0.0f;
 
 		// TODO(you): UDP virtual connection lab session
 		float secondsSinceLastClientPing = 0.0f;

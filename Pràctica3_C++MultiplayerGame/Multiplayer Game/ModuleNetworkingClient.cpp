@@ -149,7 +149,7 @@ void ModuleNetworkingClient::onPacketReceived(const InputMemoryStream &packet, c
 				replicationClient.read(packet);
 		}
 		else if (message == ServerMessage::UpdateScoreBoard) {
-			App->modScreen->screenGame->onPacketRecieved(packet);
+			App->modScreen->screenGame->onScoreBoardRecieved(packet);
 		}
 		else if (message == ServerMessage::YourNetID) {
 			packet >> networkId;

@@ -205,9 +205,23 @@ void ScreenGame::gui()
 
 			if (currentScoreBoard.mState == End)
 			{
-				ImGui::Text("");
-				ImGui::Separator();
-				ImGui::Text("The winner is %s with %u kills", std::get<0>(currentScoreBoard.scores[winnerID]).c_str(), std::get<2>(currentScoreBoard.scores[winnerID]));
+				if (winnersID.size() == 1)
+				{
+					ImGui::Text("");
+					ImGui::Separator();
+					ImGui::Text("The winner is %s with %u kills", std::get<0>(currentScoreBoard.scores[winnersID[0]]).c_str(), std::get<2>(currentScoreBoard.scores[winnersID[0]]));
+				}
+				else
+				{
+					ImGui::Text("");
+					ImGui::Separator();
+					ImGui::Text("The winners are\n");
+					for (auto winner : winnersID)
+					{
+						ImGui::Text("%s\n", std::get<0>(currentScoreBoard.scores[winnersID[winner]]).c_str());
+					}
+					ImGui::Text("with %u kills", std::get<2>(currentScoreBoard.scores[winnersID[0]]));
+				}
 			}
 			
 			ImGui::Text("");

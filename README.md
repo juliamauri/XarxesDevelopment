@@ -16,10 +16,12 @@ Game loop
 * The match's duration is 2 minutes.
 * Once the match is done, the Final Score lasts for 20 seconds, and goes back to the 10 second countdown to start another match.
 
+Controls
 * F1 - Toggle UI invisibility
 * Down arrow key - Move forward
 * AW - Rotate the spaceship
 * Left arrow key - Shoot
+* End Match button (server side) - It ends the match and goes to the Final Score phase of the game
 
 (Note: the control scheme was like this since the start and we haven't been able to change it.)
 
@@ -29,6 +31,7 @@ Game loop
 * World state replication. - Completely achieved
 * Redundant sending of input packets. - Completely achieved
 * Delivery Manager. - Completely achieved
+* Game loop. - Completely achieved
 
 All work has been done over Discord and the vast majority of commits have been co-authored by both members of the team.
 

@@ -19,8 +19,20 @@ void ReplicationManagerClient::read(const InputMemoryStream& packet)
 		{
 		case ReplicationAction::Create:
 		{
+			GameObject* exists = App->modLinkingContext->getNetworkGameObject(netID);
+	
 			uint32 goType;
 			packet >> goType;
+
+			if (exists)
+			{
+				GameObject dummy;
+
+				packet >> dummy.tag;
+				dummy.DeSerialize(packet);
+				LOG("Gameobject exists, filling dummy");
+				continue;
+			}
 
 			GameObject* go = ModuleGameObject::Instantiate();
 			if(goType < 3){
@@ -69,6 +81,7 @@ void ReplicationManagerClient::read(const InputMemoryStream& packet)
 			App->modLinkingContext->registerNetworkGameObjectWithNetworkId(go, netID);
 			packet >> go->tag;
 			go->DeSerialize(packet);
+			LOG("Creating gameobject %i, %i", goType, netID);
 			break;
 		}
 		case ReplicationAction::Update:
@@ -81,8 +94,12 @@ void ReplicationManagerClient::read(const InputMemoryStream& packet)
 		case ReplicationAction::Destroy:
 		{
 			GameObject* go = App->modLinkingContext->getNetworkGameObject(netID);
-			App->modLinkingContext->unregisterNetworkGameObject(go);
-			ModuleGameObject::Destroy(go);
+			if (go)
+			{
+				App->modLinkingContext->unregisterNetworkGameObject(go);
+				ModuleGameObject::Destroy(go);
+				LOG("Deleting gameobject %i", netID);
+			}
 			break;
 		}
 		}

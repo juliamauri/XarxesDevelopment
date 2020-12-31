@@ -17,6 +17,8 @@ void ModuleNetworkingServer::RespawnPlayers()
 	{
 		if (clientProxy.connected)
 		{
+			clientProxy.respawn = 0.0f;
+
 			if (!clientProxy.gameObject) {
 				// Create new network object
 				vec2 initialPosition = 500.0f * vec2{ Random.next() - 0.5f, Random.next() - 0.5f };
@@ -348,6 +350,39 @@ void ModuleNetworkingServer::onUpdate()
 				if (!IsValid(clientProxy.gameObject))
 				{
 					clientProxy.gameObject = nullptr;
+				}
+
+				if (clientProxy.gameObject == nullptr && App->modScreen->screenGame->GetState() == ScreenGame::MatchState::Running) {
+					clientProxy.respawn += Time.deltaTime;
+
+					if (clientProxy.respawn > RESPAWN_PLAYER) {
+						clientProxy.respawn = 0.0f;
+
+						// Create new network object
+						vec2 initialPosition = 500.0f * vec2{ Random.next() - 0.5f, Random.next() - 0.5f };
+						float initialAngle = 360.0f * Random.next();
+						clientProxy.gameObject = spawnPlayer(clientProxy.spaceShipType, initialPosition, initialAngle);
+
+						// SendNetworkID to player
+						OutputMemoryStream netIDPacket;
+						netIDPacket << PROTOCOL_ID;
+						netIDPacket << ServerMessage::YourNetID;
+						netIDPacket << clientProxy.gameObject->networkId;
+						sendPacket(netIDPacket, clientProxy.address);
+
+						// Send all network objects to the new player
+						uint16 networkGameObjectsCount;
+						GameObject* networkGameObjects[MAX_NETWORK_OBJECTS];
+						App->modLinkingContext->getNetworkGameObjects(networkGameObjects, &networkGameObjectsCount);
+						for (uint16 i = 0; i < networkGameObjectsCount; ++i)
+						{
+							GameObject* gameObject = networkGameObjects[i];
+
+							// TODO(you): World state replication lab session
+							if (gameObject->networkId == clientProxy.gameObject->networkId) continue;
+							clientProxy.replicationServer.create(gameObject->networkId);
+						}
+					}
 				}
 
 				clientProxy.deliverManager.processTiemdOutPackets(&clientProxy.replicationServer);

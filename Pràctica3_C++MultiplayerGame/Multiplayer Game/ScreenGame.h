@@ -24,7 +24,6 @@ public:
 
 	void writeScoresPacket(OutputMemoryStream& packet);
 	void onPacketRecieved(const InputMemoryStream& packet);
-
 private:
 
 	struct ScoreBoard {
@@ -32,8 +31,10 @@ private:
 		float timeRemaining = TIME_STARTING_MATCH;
 		MatchState mState = Waiting;
 	};
-
 	ScoreBoard currentScoreBoard;
+
+	bool respawn = false;
+	float timeToRespawn = 0.0f;
 
 	void enable() override;
 

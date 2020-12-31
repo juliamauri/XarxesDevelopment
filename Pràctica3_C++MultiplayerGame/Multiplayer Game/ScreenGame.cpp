@@ -179,7 +179,7 @@ void ScreenGame::gui()
 			{
 				ImGui::Text("");
 				ImGui::Separator();
-				ImGui::Text("You were killed. Respawning in %.f", timeToRespawn);
+				ImGui::Text("You were killed. Respawning in %.f", RESPAWN_PLAYER - timeToRespawn);
 			}
 			
 			ImGui::Text("");

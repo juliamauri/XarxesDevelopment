@@ -112,7 +112,7 @@ void Spaceship::onCollisionTriggered(Collider &c1, Collider &c2)
 	{
 		if (isServer)
 		{
-			App->modNetServer->AddPoint(((Laser*)c2.gameObject->behaviour)->from);
+
 			NetworkDestroy(c2.gameObject); // Destroy the laser
 		
 			if (hitPoints > 0)
@@ -131,6 +131,7 @@ void Spaceship::onCollisionTriggered(Collider &c1, Collider &c2)
 				position = gameObject->position;
 
 				NetworkDestroy(gameObject);
+				App->modNetServer->AddPoint(((Laser*)c2.gameObject->behaviour)->from);
 			}
 
 			GameObject *explosion = NetworkInstantiate();

@@ -22,14 +22,16 @@ void DeliveryManager::processAckdSequenceNumbers(const InputMemoryStream& packet
 		uint32 sequenceN;
 		packet >> sequenceN;
 
-		uint32 count = (*pendingDeliveries.begin()).sequenceNumber;
-		for (auto iter = pendingDeliveries.begin(); iter != pendingDeliveries.end(); iter++, count++) {
-			if (count == sequenceN)
-			{
-				replicationServer->popFrontAction();
-				iter->delegate->onDeliverySuccess(this);
-				pendingDeliveries.erase(iter);
-				break;
+		if (!pendingDeliveries.empty()) {
+			uint32 count = (*pendingDeliveries.begin()).sequenceNumber;
+			for (auto iter = pendingDeliveries.begin(); iter != pendingDeliveries.end(); iter++, count++) {
+				if (count == sequenceN)
+				{
+					replicationServer->popFrontAction();
+					iter->delegate->onDeliverySuccess(this);
+					pendingDeliveries.erase(iter);
+					break;
+				}
 			}
 		}
 	}
@@ -62,22 +64,37 @@ bool DeliveryManager::processSequencerNumber(const InputMemoryStream& packet, fl
 	bool ret = false;
 	uint32 totalSequenceN;
 	packet >> totalSequenceN;
+	std::vector<uint32> savedNumbers;
 
 	for (uint32 i = 0; i < totalSequenceN; i++) {
 		uint32 sequenceNumber;
 		packet >> sequenceNumber;
+		savedNumbers.push_back(sequenceNumber);
 		if (next_expected_number == sequenceNumber)
 		{
 			sequence_numbers_pending_ack.push_back(sequenceNumber);
 			next_expected_number++;
 			ret = true;
 		}
-		else if (timeSequence > RESET_NEXT_EXPECTED_SECONDS) {
-			timeSequence = 0.0f;
-			next_expected_number = sequenceNumber;
-			ret = true;
+	}
+
+	if (!ret && timeSequence > RESET_NEXT_EXPECTED_SECONDS) {
+		timeSequence = 0.0f;
+		if (!savedNumbers.empty()) {
+
+			next_expected_number = *savedNumbers.begin();
+			for (uint32 i = 0; i < totalSequenceN; i++) {
+				uint32 sequenceNumber = savedNumbers[i];
+				if (next_expected_number == sequenceNumber)
+				{
+					sequence_numbers_pending_ack.push_back(sequenceNumber);
+					next_expected_number++;
+					ret = true;
+				}
+			}
 		}
 	}
+
 	if (!ret) sequence_numbers_pending_ack.clear();
 	return ret;
 }

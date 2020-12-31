@@ -435,14 +435,6 @@ void ModuleNetworkingServer::onConnectionReset(const sockaddr_in & fromAddress)
 		proxy->deliverManager.clear();
 		proxy->replicationServer.clear();
 		destroyClientProxy(proxy);
-
-		for (ClientProxy& clientProxy : clientProxies)
-		{
-			if (clientProxy.connected && clientProxy.gameObject)
-			{
-				clientProxy.replicationServer.destroy(clientProxy.gameObject->networkId);
-			}
-		}
 	}
 }
 

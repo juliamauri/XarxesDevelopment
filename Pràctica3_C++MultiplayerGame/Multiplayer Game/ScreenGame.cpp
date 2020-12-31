@@ -203,6 +203,12 @@ void ScreenGame::gui()
 			{
 				ImGui::Text("%s  -  %u", std::get<0>(currentScoreBoard.scores[i]).c_str(), std::get<2>(currentScoreBoard.scores[i]));
 			}
+
+			if (currentScoreBoard.mState == End)
+			{
+				ImGui::Separator();
+				ImGui::Text("The winner is: %s with %u kills", std::get<0>(currentScoreBoard.scores[winnerID]).c_str(), std::get<2>(currentScoreBoard.scores[winnerID]));
+			}
 		}
 		ImGui::End();
 	}

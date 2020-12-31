@@ -79,10 +79,13 @@ void ModuleNetworkingClient::onGui()
 			ImGui::Text(" - Type: %u", spaceshipType);
 			ImGui::Text(" - Network id: %u", networkId);
 
-			vec2 playerPosition = {};
-			GameObject *playerGameObject = App->modLinkingContext->getNetworkGameObject(networkId);
-			if (playerGameObject != nullptr) {
-				playerPosition = playerGameObject->position;
+			vec2 playerPosition = {0.0f, 0.0f};
+			if (networkId > 0) {
+				GameObject* playerGameObject = App->modLinkingContext->getNetworkGameObject(networkId);
+				if (playerGameObject != nullptr) {
+					playerPosition = playerGameObject->position;
+				}
+				
 			}
 			ImGui::Text(" - Coordinates: (%f, %f)", playerPosition.x, playerPosition.y);
 

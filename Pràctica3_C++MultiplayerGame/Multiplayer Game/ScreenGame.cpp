@@ -133,6 +133,18 @@ void ScreenGame::update()
 					//Notify To Stop
 					currentScoreBoard.timeRemaining = TIME_NEXT_MATCH;
 					currentScoreBoard.mState = ScreenGame::MatchState::End;
+
+					uint32 maximumPoints = 0;
+					winnerID = 0;
+					for (uint32 i = 0; i < currentScoreBoard.scores.size(); i++)
+					{
+						uint32 score = std::get<2>(currentScoreBoard.scores[i]);
+						if (score > maximumPoints) {
+							maximumPoints = score;
+							winnerID = i;
+						}
+					}
+					
 					break;
 				case ScreenGame::MatchState::End:
 					//Reset ScoreBoard

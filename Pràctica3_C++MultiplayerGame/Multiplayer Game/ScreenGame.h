@@ -38,6 +38,8 @@ private:
 	bool respawn = false;
 	float timeToRespawn = 0.0f;
 
+	uint32 winnerID = 0;
+
 	void enable() override;
 
 	void update() override;

@@ -231,7 +231,7 @@ void ModuleNetworkingClient::onUpdate()
 		secondsSinceLastInputDelivery += Time.deltaTime;
 
 		// Input delivery interval timed out: create a new input packet
-		if (secondsSinceLastInputDelivery > inputDeliveryIntervalSeconds)
+		if (secondsSinceLastInputDelivery > inputDeliveryIntervalSeconds && App->modScreen->screenGame->GetState() == ScreenGame::MatchState::Running)
 		{
 			secondsSinceLastInputDelivery = 0.0f;
 

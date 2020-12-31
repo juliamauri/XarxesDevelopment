@@ -59,12 +59,12 @@ void ModuleNetworkingClient::onGui()
 
 	if (ImGui::CollapsingHeader("ModuleNetworkingClient", ImGuiTreeNodeFlags_DefaultOpen))
 	{
-		if (state == ClientState::Connecting)
+		switch (state)
 		{
+		case ModuleNetworkingClient::ClientState::Connecting:
 			ImGui::Text("Connecting to server...");
-		}
-		else if (state == ClientState::Connected)
-		{
+			break;
+		case ModuleNetworkingClient::ClientState::Connected:
 			ImGui::Text("Connected to server");
 
 			ImGui::Separator();
@@ -79,15 +79,17 @@ void ModuleNetworkingClient::onGui()
 			ImGui::Text(" - Type: %u", spaceshipType);
 			ImGui::Text(" - Network id: %u", networkId);
 
-			vec2 playerPosition = {0.0f, 0.0f};
-			if (networkId > 0) {
-				GameObject* playerGameObject = App->modLinkingContext->getNetworkGameObject(networkId);
-				if (playerGameObject != nullptr) {
-					playerPosition = playerGameObject->position;
+			{
+				vec2 playerPosition = { 0.0f, 0.0f };
+				if (networkId > 0) {
+					GameObject* playerGameObject = App->modLinkingContext->getNetworkGameObject(networkId);
+					if (playerGameObject != nullptr) {
+						playerPosition = playerGameObject->position;
+					}
+
 				}
-				
+				ImGui::Text(" - Coordinates: (%f, %f)", playerPosition.x, playerPosition.y);
 			}
-			ImGui::Text(" - Coordinates: (%f, %f)", playerPosition.x, playerPosition.y);
 
 			ImGui::Separator();
 
@@ -99,6 +101,7 @@ void ModuleNetworkingClient::onGui()
 
 			ImGui::Text("Input:");
 			ImGui::InputFloat("Delivery interval (s)", &inputDeliveryIntervalSeconds, 0.01f, 0.1f, 4);
+			break;
 		}
 	}
 }
@@ -113,57 +116,59 @@ void ModuleNetworkingClient::onPacketReceived(const InputMemoryStream &packet, c
 	ServerMessage message;
 	packet >> message;
 
-	if (state == ClientState::Connecting)
+	switch (state)
 	{
-		if (message == ServerMessage::Welcome)
+	case ModuleNetworkingClient::ClientState::Connecting:
+		switch (message)
 		{
+		case ServerMessage::Welcome:
 			packet >> playerId;
 			packet >> networkId;
 
 			LOG("ModuleNetworkingClient::onPacketReceived() - Welcome from server");
 			state = ClientState::Connected;
-		}
-		else if (message == ServerMessage::Unwelcome)
-		{
+			break;
+		case ServerMessage::Unwelcome:
 			WLOG("ModuleNetworkingClient::onPacketReceived() - Unwelcome from server :-(");
 			disconnect();
+			break;
 		}
-	}
-	else if (state == ClientState::Connected)
-	{
 
+		break;
+	case ModuleNetworkingClient::ClientState::Connected:
 		// TODO(you): UDP virtual connection lab session
 		//Client updates last time ping recived.
-		if (message == ServerMessage::Ping) {
-			secondsSinceServerLastPing = 0.0f;
-
-		}
-		else if (message == ServerMessage::InputConfirmation) {
-			packet >> inputDataFront;
-		}
-		else if(message == ServerMessage::WorldDelivery)
+		switch (message)
 		{
+		case ServerMessage::Ping:
+			secondsSinceServerLastPing = 0.0f;
+			break;
+		case ServerMessage::InputConfirmation:
+			packet >> inputDataFront;
+			break;
+		case ServerMessage::WorldDelivery:
 			// TODO(you): Reliability on top of UDP lab session
-			if(deliveryManager.processSequencerNumber(packet, timeToResetNextExpected))
+			if (deliveryManager.processSequencerNumber(packet, timeToResetNextExpected))
 				// TODO(you): World state replication lab session
 				replicationClient.read(packet);
-		}
-		else if (message == ServerMessage::UpdateScoreBoard) {
+			break;
+		case ServerMessage::UpdateScoreBoard:
 			App->modScreen->screenGame->onPacketRecieved(packet);
-		}
-		else if (message == ServerMessage::YourNetID) {
+			break;
+		case ServerMessage::YourNetID:
 			packet >> networkId;
+			break;
 		}
+		break;
 	}
 }
 
 void ModuleNetworkingClient::onUpdate()
 {
-	if (state == ClientState::Stopped) return;
-
-
-	if (state == ClientState::Connecting)
+	switch (state)
 	{
+	case ModuleNetworkingClient::ClientState::Stopped: return;
+	case ModuleNetworkingClient::ClientState::Connecting:
 		secondsSinceLastHello += Time.deltaTime;
 
 		if (secondsSinceLastHello > 0.1f)
@@ -178,9 +183,8 @@ void ModuleNetworkingClient::onUpdate()
 
 			sendPacket(packet, serverAddress);
 		}
-	}
-	else if (state == ClientState::Connected)
-	{
+		break;
+	case ModuleNetworkingClient::ClientState::Connected:
 		timeToResetNextExpected += Time.deltaTime;
 
 		// TODO(you): UDP virtual connection lab session
@@ -221,7 +225,7 @@ void ModuleNetworkingClient::onUpdate()
 		{
 			// Pack current input
 			uint32 currentInputData = inputDataBack++;
-			InputPacketData &inputPacketData = inputData[currentInputData % ArrayCount(inputData)];
+			InputPacketData& inputPacketData = inputData[currentInputData % ArrayCount(inputData)];
 			inputPacketData.sequenceNumber = currentInputData;
 			inputPacketData.horizontalAxis = Input.horizontalAxis;
 			inputPacketData.verticalAxis = Input.verticalAxis;
@@ -243,7 +247,7 @@ void ModuleNetworkingClient::onUpdate()
 
 			for (uint32 i = inputDataFront; i < inputDataBack; ++i)
 			{
-				InputPacketData &inputPacketData = inputData[i % ArrayCount(inputData)];
+				InputPacketData& inputPacketData = inputData[i % ArrayCount(inputData)];
 				packet << inputPacketData.sequenceNumber;
 				packet << inputPacketData.horizontalAxis;
 				packet << inputPacketData.verticalAxis;
@@ -260,7 +264,7 @@ void ModuleNetworkingClient::onUpdate()
 			deliveryManager.writeSequenceNumbersPendingAck(packet);
 			sendPacket(packet, serverAddress);
 		}
-		
+
 
 		// TODO(you): Latency management lab session
 
@@ -272,7 +276,7 @@ void ModuleNetworkingClient::onUpdate()
 				App->modRender->cameraPosition = playerGameObject->position;
 			}
 		}
-
+		break;
 	}
 }
 

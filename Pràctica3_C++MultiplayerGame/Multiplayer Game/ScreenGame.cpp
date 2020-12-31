@@ -10,7 +10,7 @@ GameObject *spaceBottomRight = nullptr;
 uint32 ScreenGame::AddPlayer(const char* name, uint8 spaceType)
 {
 	currentScoreBoard.scores.push_back(std::make_tuple(name, spaceType, 0));
-	return currentScoreBoard.scores.size() - 1;
+	return static_cast<uint32>(currentScoreBoard.scores.size() - 1);
 }
 
 ScreenGame::MatchState ScreenGame::GetState() const
@@ -196,17 +196,17 @@ void ScreenGame::gui()
 		if (ImGui::Begin("ScoreBoard"))
 		{
 			//Time Remaining
-			if (currentScoreBoard.mState == Waiting)
+			switch (currentScoreBoard.mState)
 			{
+			case MatchState::Waiting:
 				ImGui::Text("Match starting in %.f", currentScoreBoard.timeRemaining);
-			}
-			else if(currentScoreBoard.mState == Running)
-			{
+				break;
+			case MatchState::Running:
 				ImGui::Text("Time remaining: %.f seconds", currentScoreBoard.timeRemaining);
-			}
-			else
-			{
+				break;
+			case MatchState::End:
 				ImGui::Text("Next match starting in %.f seconds", currentScoreBoard.timeRemaining);
+				break;
 			}
 
 			if (respawn)

@@ -164,8 +164,9 @@ void ModuleNetworkingServer::onPacketReceived(const InputMemoryStream &packet, c
 
 		ClientProxy *proxy = getClientProxy(fromAddress);
 
-		if (message == ClientMessage::Hello)
+		switch (message)
 		{
+		case ClientMessage::Hello:
 			if (proxy == nullptr)
 			{
 				proxy = createClientProxy();
@@ -187,7 +188,7 @@ void ModuleNetworkingServer::onPacketReceived(const InputMemoryStream &packet, c
 
 					if (App->modScreen->screenGame->GetState() == ScreenGame::MatchState::Running) {
 						// Create new network object
-						vec2 initialPosition = 500.0f * vec2{ Random.next() - 0.5f, Random.next() - 0.5f};
+						vec2 initialPosition = 500.0f * vec2{ Random.next() - 0.5f, Random.next() - 0.5f };
 						float initialAngle = 360.0f * Random.next();
 						proxy->gameObject = spawnPlayer(proxy->spaceShipType, initialPosition, initialAngle);
 					}
@@ -236,51 +237,53 @@ void ModuleNetworkingServer::onPacketReceived(const InputMemoryStream &packet, c
 				// NOTE(jesus): Server is full...
 				WLOG("Message received: UNWELCOMED hello - server is full");
 			}
-		}
-		else if (message == ClientMessage::Input && App->modScreen->screenGame->GetState() == ScreenGame::MatchState::Running)
-		{
-			// Process the input packet and update the corresponding game object
-			if (proxy != nullptr && IsValid(proxy->gameObject))
-			{
-				// TODO(you): Input Part | Reliability on top of UDP lab session
-
-				uint32 lastInput = 0;
-				// Read input data
-				while (packet.RemainingByteCount() > 0)
+			break;
+		case ClientMessage::Input:
+			if (App->modScreen->screenGame->GetState() == ScreenGame::MatchState::Running) {
+				// Process the input packet and update the corresponding game object
+				if (proxy != nullptr && IsValid(proxy->gameObject))
 				{
-					InputPacketData inputData;
-					packet >> inputData.sequenceNumber;
-					packet >> inputData.horizontalAxis;
-					packet >> inputData.verticalAxis;
-					packet >> inputData.buttonBits;
+					// TODO(you): Input Part | Reliability on top of UDP lab session
 
-					if (inputData.sequenceNumber >= proxy->nextExpectedInputSequenceNumber)
+					uint32 lastInput = 0;
+					// Read input data
+					while (packet.RemainingByteCount() > 0)
 					{
-						proxy->gamepad.horizontalAxis = inputData.horizontalAxis;
-						proxy->gamepad.verticalAxis = inputData.verticalAxis;
-						unpackInputControllerButtons(inputData.buttonBits, proxy->gamepad);
-						proxy->gameObject->behaviour->onInput(proxy->gamepad);
-						proxy->nextExpectedInputSequenceNumber = inputData.sequenceNumber + 1;
-						lastInput = inputData.sequenceNumber;
-					}
-				}
+						InputPacketData inputData;
+						packet >> inputData.sequenceNumber;
+						packet >> inputData.horizontalAxis;
+						packet >> inputData.verticalAxis;
+						packet >> inputData.buttonBits;
 
-				OutputMemoryStream lastInputPacket;
-				lastInputPacket << PROTOCOL_ID;
-				lastInputPacket << ServerMessage::InputConfirmation;
-				lastInputPacket << lastInput;
-				sendPacket(lastInputPacket, fromAddress);
+						if (inputData.sequenceNumber >= proxy->nextExpectedInputSequenceNumber)
+						{
+							proxy->gamepad.horizontalAxis = inputData.horizontalAxis;
+							proxy->gamepad.verticalAxis = inputData.verticalAxis;
+							unpackInputControllerButtons(inputData.buttonBits, proxy->gamepad);
+							proxy->gameObject->behaviour->onInput(proxy->gamepad);
+							proxy->nextExpectedInputSequenceNumber = inputData.sequenceNumber + 1;
+							lastInput = inputData.sequenceNumber;
+						}
+					}
+
+					OutputMemoryStream lastInputPacket;
+					lastInputPacket << PROTOCOL_ID;
+					lastInputPacket << ServerMessage::InputConfirmation;
+					lastInputPacket << lastInput;
+					sendPacket(lastInputPacket, fromAddress);
+				}
 			}
-		}
-		else if (message == ClientMessage::Ping) { 
+			break;
+		case ClientMessage::Ping:
 			// TODO(you): UDP virtual connection lab session
 			if (proxy != nullptr) {
 				//Update last ping recived from client
 				proxy->secondsSinceLastClientPing = 0.0f;
 			}
-		}
-		else if (message == ClientMessage::DeliveryConfirmation) {
+			break;
+		case ClientMessage::DeliveryConfirmation:
 			proxy->deliverManager.processAckdSequenceNumbers(packet, &proxy->replicationServer);
+			break;
 		}
 	}
 }
@@ -344,7 +347,11 @@ void ModuleNetworkingServer::onUpdate()
 				{
 					clientProxy.secondsSinceLastClientPing = 0.0f;
 
+					//"si un client da timeout, informar als altres clients de la seva desconexió"
+					onConnectionReset(clientProxy.address);
+
 					clientProxy.connected = false;
+					continue;
 				}
 
 				//Envia un ping.
@@ -356,8 +363,6 @@ void ModuleNetworkingServer::onUpdate()
 
 					WLOG("Ping sent to client proxies.");
 				}
-
-				//"si un client da timeout, informar als altres clients de la seva desconexió" futures labs
 
 				// Don't let the client proxy point to a destroyed game object
 				if (!IsValid(clientProxy.gameObject))

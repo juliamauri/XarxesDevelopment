@@ -11,7 +11,58 @@ void ModuleNetworkingServer::setListenPort(int port)
 	listenPort = port;
 }
 
+void ModuleNetworkingServer::RespawnPlayers()
+{
+	for (ClientProxy& clientProxy : clientProxies)
+	{
+		if (clientProxy.connected)
+		{
+			if (!clientProxy.gameObject) {
+				// Create new network object
+				vec2 initialPosition = 500.0f * vec2{ Random.next() - 0.5f, Random.next() - 0.5f };
+				float initialAngle = 360.0f * Random.next();
+				clientProxy.gameObject = spawnPlayer(clientProxy.spaceShipType, initialPosition, initialAngle);
 
+				// SendNetworkID to player
+				OutputMemoryStream netIDPacket;
+				netIDPacket << PROTOCOL_ID;
+				netIDPacket << ServerMessage::YourNetID;
+				netIDPacket << clientProxy.gameObject->networkId;
+				sendPacket(netIDPacket, clientProxy.address);
+
+				// Send all network objects to the new player
+				uint16 networkGameObjectsCount;
+				GameObject* networkGameObjects[MAX_NETWORK_OBJECTS];
+				App->modLinkingContext->getNetworkGameObjects(networkGameObjects, &networkGameObjectsCount);
+				for (uint16 i = 0; i < networkGameObjectsCount; ++i)
+				{
+					GameObject* gameObject = networkGameObjects[i];
+
+					// TODO(you): World state replication lab session
+					if (gameObject->networkId == clientProxy.gameObject->networkId) continue;
+					clientProxy.replicationServer.create(gameObject->networkId);
+				}
+			}
+			else {
+				vec2 newPosition = 500.0f * vec2{ Random.next() - 0.5f, Random.next() - 0.5f };
+				float newAngle = 360.0f * Random.next();
+				clientProxy.gameObject->position.x = newPosition.x;
+				clientProxy.gameObject->position.y = newPosition.y;
+				clientProxy.gameObject->angle = newAngle;
+				dynamic_cast<Spaceship*>(clientProxy.gameObject->behaviour)->hitPoints = Spaceship::MAX_HIT_POINTS;
+
+				uint16 networkGameObjectsCount;
+				GameObject* networkGameObjects[MAX_NETWORK_OBJECTS];
+				App->modLinkingContext->getNetworkGameObjects(networkGameObjects, &networkGameObjectsCount);
+				for (uint16 i = 0; i < networkGameObjectsCount; ++i)
+				{
+					GameObject* gameObject = networkGameObjects[i];
+					clientProxy.replicationServer.update(gameObject->networkId);
+				}
+			}
+		}
+	}
+}
 
 //////////////////////////////////////////////////////////////////////
 // ModuleNetworking virtual methods
@@ -105,9 +156,8 @@ void ModuleNetworkingServer::onPacketReceived(const InputMemoryStream &packet, c
 				if (proxy != nullptr)
 				{
 					std::string playerName;
-					uint8 spaceshipType;
 					packet >> playerName;
-					packet >> spaceshipType;
+					packet >> proxy->spaceShipType;
 
 					proxy->address.sin_family = fromAddress.sin_family;
 					proxy->address.sin_addr.S_un.S_addr = fromAddress.sin_addr.S_un.S_addr;
@@ -116,13 +166,13 @@ void ModuleNetworkingServer::onPacketReceived(const InputMemoryStream &packet, c
 					proxy->name = playerName;
 					proxy->clientId = nextClientId++;
 
-					App->modScreen->screenGame->AddPlayer(playerName.c_str(), spaceshipType);
+					App->modScreen->screenGame->AddPlayer(playerName.c_str(), proxy->spaceShipType);
 
 					if (App->modScreen->screenGame->GetState() == ScreenGame::MatchState::Running) {
 						// Create new network object
 						vec2 initialPosition = 500.0f * vec2{ Random.next() - 0.5f, Random.next() - 0.5f};
 						float initialAngle = 360.0f * Random.next();
-						proxy->gameObject = spawnPlayer(spaceshipType, initialPosition, initialAngle);
+						proxy->gameObject = spawnPlayer(proxy->spaceShipType, initialPosition, initialAngle);
 					}
 
 				}

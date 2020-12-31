@@ -115,6 +115,8 @@ void ScreenGame::update()
 				case ScreenGame::MatchState::Waiting:
 					currentScoreBoard.timeRemaining = TIME_MATCH;
 					currentScoreBoard.mState = ScreenGame::MatchState::Running;
+					//Spawn all Players
+					App->modNetServer->RespawnPlayers();
 					break;
 				case ScreenGame::MatchState::Running:
 					//Notify To Stop
@@ -122,7 +124,7 @@ void ScreenGame::update()
 					currentScoreBoard.mState = ScreenGame::MatchState::End;
 					break;
 				case ScreenGame::MatchState::End:
-					//Respawn Players, Reset ScoreBoard
+					//Reset ScoreBoard
 					currentScoreBoard.timeRemaining = TIME_STARTING_MATCH;
 					std::vector<std::tuple<std::string, uint32, uint32>> resetScores;
 					for (uint32 i = 0; i < currentScoreBoard.scores.size(); i++)

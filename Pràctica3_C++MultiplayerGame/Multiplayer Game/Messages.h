@@ -15,5 +15,6 @@ enum class ServerMessage : uint8
 	Ping,   // NOTE(jesus): Use this message type in the virtual connection lab session
 	InputConfirmation,
 	WorldDelivery,
-	UpdateScoreBoard
+	UpdateScoreBoard,
+	YourNetID
 };

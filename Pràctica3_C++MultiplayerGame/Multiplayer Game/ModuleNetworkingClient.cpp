@@ -151,6 +151,9 @@ void ModuleNetworkingClient::onPacketReceived(const InputMemoryStream &packet, c
 		else if (message == ServerMessage::UpdateScoreBoard) {
 			App->modScreen->screenGame->onPacketRecieved(packet);
 		}
+		else if (message == ServerMessage::YourNetID) {
+			packet >> networkId;
+		}
 	}
 }
 

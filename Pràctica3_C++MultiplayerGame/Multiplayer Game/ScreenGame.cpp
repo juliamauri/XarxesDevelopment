@@ -19,7 +19,7 @@ ScreenGame::MatchState ScreenGame::GetState() const
 
 void ScreenGame::writeScoresPacket(OutputMemoryStream& packet)
 {
-	uint32 totalScores = currentScoreBoard.scores.size();
+	size_t totalScores = currentScoreBoard.scores.size();
 	packet << totalScores;
 
 	for (uint32 i = 0; i < totalScores; i++)

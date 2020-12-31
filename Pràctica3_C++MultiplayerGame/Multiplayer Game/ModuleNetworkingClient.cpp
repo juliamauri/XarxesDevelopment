@@ -173,8 +173,8 @@ void ModuleNetworkingClient::onUpdate()
 			OutputMemoryStream packet;
 			packet << PROTOCOL_ID;
 			packet << ClientMessage::Hello;
-			packet << playerName;
 			packet << spaceshipType;
+			packet << playerName;
 
 			sendPacket(packet, serverAddress);
 		}

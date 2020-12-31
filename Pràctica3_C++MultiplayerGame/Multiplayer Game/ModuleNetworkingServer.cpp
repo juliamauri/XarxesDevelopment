@@ -155,9 +155,9 @@ void ModuleNetworkingServer::onPacketReceived(const InputMemoryStream &packet, c
 
 				if (proxy != nullptr)
 				{
+					packet >> proxy->spaceShipType;
 					std::string playerName;
 					packet >> playerName;
-					packet >> proxy->spaceShipType;
 
 					proxy->address.sin_family = fromAddress.sin_family;
 					proxy->address.sin_addr.S_un.S_addr = fromAddress.sin_addr.S_un.S_addr;

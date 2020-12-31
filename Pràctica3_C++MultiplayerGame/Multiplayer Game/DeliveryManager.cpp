@@ -135,7 +135,7 @@ Delivery* DeliveryManager::createDelivery()
 
 void DeliveryManager::writeAllSequenceNumber(OutputMemoryStream& packet)
 {
-	uint32 totalDeliveries = pendingDeliveries.size();
+	size_t totalDeliveries = pendingDeliveries.size();
 	packet << totalDeliveries;
 	for (auto iter = pendingDeliveries.begin(); iter != pendingDeliveries.end(); iter++)
 		packet << iter->sequenceNumber;

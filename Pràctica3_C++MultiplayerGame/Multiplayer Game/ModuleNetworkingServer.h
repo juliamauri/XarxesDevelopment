@@ -45,7 +45,7 @@ private:
 		bool connected = false;
 		sockaddr_in address;
 		uint32 clientId;
-		uint32 spaceShipType;
+		uint8 spaceShipType;
 		std::string name;
 		GameObject *gameObject = nullptr;
 

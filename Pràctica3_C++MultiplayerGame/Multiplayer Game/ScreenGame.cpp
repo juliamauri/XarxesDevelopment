@@ -28,7 +28,7 @@ void ScreenGame::ScorePoint(uint32 id)
 void ScreenGame::EndMatch()
 {
 	if (currentScoreBoard.mState == ScreenGame::MatchState::Running)
-		currentScoreBoard.timeRemaining = TIME_MATCH;
+		currentScoreBoard.timeRemaining = 0.0f;
 }
 
 void ScreenGame::writeScoresPacket(OutputMemoryStream& packet)
@@ -141,14 +141,17 @@ void ScreenGame::update()
 					currentScoreBoard.mState = ScreenGame::MatchState::End;
 					{
 						uint32 maximumPoints = 0;
-						winnerID = 0;
+						winnersID.clear();
 						for (uint32 i = 0; i < currentScoreBoard.scores.size(); i++)
 						{
 							uint32 score = std::get<2>(currentScoreBoard.scores[i]);
 							if (score > maximumPoints) {
 								maximumPoints = score;
-								winnerID = i;
+								winnersID.clear();
+								winnersID.push_back(i);
 							}
+							else if (score == maximumPoints)
+								winnersID.push_back(i);
 						}
 					}
 					break;

@@ -39,7 +39,7 @@ private:
 	bool respawn = false;
 	float timeToRespawn = 0.0f;
 
-	uint32 winnerID = 0;
+	std::vector<uint32> winnersID;
 
 	void enable() override;
 

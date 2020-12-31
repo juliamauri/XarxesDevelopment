@@ -21,7 +21,8 @@ ScreenGame::MatchState ScreenGame::GetState() const
 void ScreenGame::ScorePoint(uint32 id)
 {
 	std::tuple<std::string, uint8, uint32>& t = currentScoreBoard.scores[id];
-	std::get<2>(t) =+ 1;
+	uint32 currentScore = std::get<2>(t);
+	std::get<2>(t) = currentScore + 1;
 }
 
 void ScreenGame::writeScoresPacket(OutputMemoryStream& packet)
@@ -178,7 +179,7 @@ void ScreenGame::gui()
 			{
 				ImGui::Text("");
 				ImGui::Separator();
-				ImGui::Text("You were killed. Respawning in %u", timeToRespawn);
+				ImGui::Text("You were killed. Respawning in %.f", timeToRespawn);
 			}
 			
 			ImGui::Text("");

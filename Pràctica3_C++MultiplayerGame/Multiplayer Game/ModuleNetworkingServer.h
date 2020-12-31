@@ -122,6 +122,8 @@ private:
 
 	// TODO(you): UDP virtual connection lab session
 	float secondsSinceLastPingDelivered = 0.0f;
+
+	float secondsToSendScoreBoard = 0.0f;
 };
 
 

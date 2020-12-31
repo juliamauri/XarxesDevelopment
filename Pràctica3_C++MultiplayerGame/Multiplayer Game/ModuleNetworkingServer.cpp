@@ -248,10 +248,25 @@ void ModuleNetworkingServer::onUpdate()
 			sendPing = true;
 		}
 
+		OutputMemoryStream sbPacket;
+		bool sendScoreBoard = false;
+		secondsToSendScoreBoard += Time.deltaTime;
+		if (secondsToSendScoreBoard > SEND_SCOREBOARD)
+		{
+			secondsToSendScoreBoard = 0.0f;
+			sendScoreBoard = true;
+
+			sbPacket << PROTOCOL_ID;
+			sbPacket << ServerMessage::UpdateScoreBoard;
+			App->modScreen->screenGame->writeScoresPacket(sbPacket);
+		}
+
 		for (ClientProxy &clientProxy : clientProxies)
 		{
 			if (clientProxy.connected)
 			{
+				if(sendScoreBoard) 	sendPacket(sbPacket, clientProxy.address);
+
 				// TODO(you): UDP virtual connection lab session
 				// Suma el temps de last packet recieved, si supera el timeout desconecta el client.
 				// DISCONNECT_TIMEOUT_SECONDS

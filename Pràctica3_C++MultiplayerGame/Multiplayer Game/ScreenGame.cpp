@@ -166,10 +166,18 @@ void ScreenGame::gui()
 			{
 				ImGui::Text("Next match starting in %.f seconds", currentScoreBoard.timeRemaining);
 			}
+
+			if (respawn)
+			{
+				ImGui::Text("");
+				ImGui::Separator();
+				ImGui::Text("You were killed. Respawning in %u", timeToRespawn);
+			}
 			
 			ImGui::Text("");
 			ImGui::Separator();
 			ImGui::Text("");
+
 			//Kill Score
 			for (int i = 0; i < currentScoreBoard.scores.size(); i++)
 			{

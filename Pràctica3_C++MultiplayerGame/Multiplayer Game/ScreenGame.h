@@ -4,6 +4,8 @@
 #define TIME_STARTING_MATCH 10.f
 #define TIME_MATCH 120.f
 
+#include <map>
+
 class ScreenGame : public Screen
 {
 public:
@@ -34,7 +36,7 @@ public:
 private:
 
 	struct ScoreBoard {
-		std::vector<std::tuple<std::string, uint8, uint32>> scores;
+		std::map<uint32,std::tuple<std::string, uint8, uint32>> scores;
 		float timeRemaining = TIME_STARTING_MATCH;
 		MatchState mState = Waiting;
 	};

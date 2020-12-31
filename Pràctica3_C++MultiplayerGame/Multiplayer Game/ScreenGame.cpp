@@ -9,18 +9,14 @@ GameObject *spaceBottomRight = nullptr;
 
 uint32 ScreenGame::AddPlayer(const char* name, uint8 spaceType)
 {
-	currentScoreBoard.scores.push_back(std::make_tuple(name, spaceType, 0));
-	return static_cast<uint32>(currentScoreBoard.scores.size() - 1);
+	static uint32 infinite_id = 0;
+	currentScoreBoard.scores.insert({ infinite_id++, std::make_tuple(name, spaceType, 0) });
+	return infinite_id - 1;
 }
 
 void ScreenGame::DeletePlayer(uint32 id)
 {
-	uint32 count = 0;
-	for(auto iter = currentScoreBoard.scores.begin(); iter != currentScoreBoard.scores.end(); iter++, count++)
-		if (count == id) {
-			currentScoreBoard.scores.erase(iter);
-			break;
-		}
+	currentScoreBoard.scores.erase(id);
 }
 
 ScreenGame::MatchState ScreenGame::GetState() const
@@ -30,7 +26,7 @@ ScreenGame::MatchState ScreenGame::GetState() const
 
 void ScreenGame::ScorePoint(uint32 id)
 {
-	std::tuple<std::string, uint8, uint32>& t = currentScoreBoard.scores[id];
+	std::tuple<std::string, uint8, uint32>& t = currentScoreBoard.scores.at(id);
 	uint32 currentScore = std::get<2>(t);
 	std::get<2>(t) = currentScore + 1;
 }
@@ -46,14 +42,16 @@ void ScreenGame::writeScoresPacket(OutputMemoryStream& packet)
 	size_t totalScores = currentScoreBoard.scores.size();
 	packet << totalScores;
 
-	for (uint32 i = 0; i < totalScores; i++)
+	for (auto score : currentScoreBoard.scores)
 	{
-		std::string playerName = std::get<0>(currentScoreBoard.scores[i]);
+		std::string playerName = std::get<0>(score.second);
 		packet << playerName;
-		uint8 spaceType = std::get<1>(currentScoreBoard.scores[i]);
+		uint8 spaceType = std::get<1>(score.second);
 		packet << spaceType;
-		uint32 score = std::get<2>(currentScoreBoard.scores[i]);
-		packet << score;
+		uint32 sN = std::get<2>(score.second);
+		packet << sN;
+		uint32 uniqueID = score.first;
+		packet << uniqueID;
 	}
 
 	packet << currentScoreBoard.timeRemaining;
@@ -75,7 +73,9 @@ void ScreenGame::onPacketRecieved(const InputMemoryStream& packet)
 		packet >> spaceType;
 		uint32 score;
 		packet >> score;
-		currentScoreBoard.scores.push_back(std::make_tuple( playerName, spaceType, score ));
+		uint32 uniqueID;
+		packet >> uniqueID;
+		currentScoreBoard.scores.insert({ uniqueID, std::make_tuple(playerName, spaceType, score) });
 	}
 
 	packet >> currentScoreBoard.timeRemaining;
@@ -85,16 +85,16 @@ void ScreenGame::onPacketRecieved(const InputMemoryStream& packet)
 	if (lastState == MatchState::Running && currentScoreBoard.mState == MatchState::End) {
 		maximumPoints = 0;
 		winnersID.clear();
-		for (uint32 i = 0; i < currentScoreBoard.scores.size(); i++)
+		for (auto score : currentScoreBoard.scores)
 		{
-			uint32 score = std::get<2>(currentScoreBoard.scores[i]);
-			if (score > maximumPoints) {
-				maximumPoints = score;
+			uint32 sN = std::get<2>(score.second);
+			if (sN > maximumPoints) {
+				maximumPoints = sN;
 				winnersID.clear();
-				winnersID.push_back(std::get<0>(currentScoreBoard.scores[i]));
+				winnersID.push_back(std::get<0>(score.second));
 			}
-			else if (score == maximumPoints)
-				winnersID.push_back(std::get<0>(currentScoreBoard.scores[i]));
+			else if (sN == maximumPoints)
+				winnersID.push_back(std::get<0>(score.second));
 		}
 	}
 
@@ -181,13 +181,13 @@ void ScreenGame::update()
 				case ScreenGame::MatchState::End:
 					//Reset ScoreBoard
 					currentScoreBoard.timeRemaining = TIME_STARTING_MATCH;
-					std::vector<std::tuple<std::string, uint8, uint32>> resetScores;
-					for (uint32 i = 0; i < currentScoreBoard.scores.size(); i++)
+					std::map<uint32, std::tuple<std::string, uint8, uint32>> resetScores;
+					for (auto score : currentScoreBoard.scores)
 					{
-						std::string playerName = std::get<0>(currentScoreBoard.scores[i]);
-						uint8 spaceType = std::get<1>(currentScoreBoard.scores[i]);
-						uint32 score = std::get<2>(currentScoreBoard.scores[i]);
-						resetScores.push_back(std::make_tuple(playerName, spaceType, 0));
+						std::string playerName = std::get<0>(score.second);
+						uint8 spaceType = std::get<1>(score.second);
+						uint32 SN = std::get<2>(score.second);
+						resetScores.insert({ score.first, std::make_tuple(playerName, spaceType, 0) });
 					}
 					currentScoreBoard.scores = resetScores;
 					currentScoreBoard.mState = ScreenGame::MatchState::Waiting;
@@ -252,9 +252,9 @@ void ScreenGame::gui()
 			ImGui::Text("");
 
 			//Kill Score
-			for (int i = 0; i < currentScoreBoard.scores.size(); i++)
+			for (auto score : currentScoreBoard.scores)
 			{
-				ImGui::Text("%s  -  %u", std::get<0>(currentScoreBoard.scores[i]).c_str(), std::get<2>(currentScoreBoard.scores[i]));
+				ImGui::Text("%s  -  %u", std::get<0>(score.second).c_str(), std::get<2>(score.second));
 			}
 		}
 		ImGui::End();

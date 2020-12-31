@@ -436,6 +436,7 @@ void ModuleNetworkingServer::onConnectionReset(const sockaddr_in & fromAddress)
 
 	if (proxy)
 	{
+		App->modScreen->screenGame->DeletePlayer(proxy->scoreBoardID);
 		// Clear the client proxy
 		proxy->deliverManager.clear();
 		destroyClientProxy(proxy);

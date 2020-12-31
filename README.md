@@ -1,6 +1,6 @@
 # XarxesDevelopment
 
-Subject of networking, repository based by litle programs using the Windows Sockets 2 (Winsock) library.
+Subject of networking, repository based by little programs using the Windows Sockets 2 (Winsock) library.
 
 ## Lab 4: Multiplayer game in C++
 

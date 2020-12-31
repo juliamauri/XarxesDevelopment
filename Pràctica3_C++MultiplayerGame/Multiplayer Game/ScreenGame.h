@@ -23,7 +23,7 @@ public:
 	MatchState GetState()const;
 
 	void writeScoresPacket(OutputMemoryStream& packet);
-	void onPacketRecieved(InputMemoryStream& packet);
+	void onPacketRecieved(const InputMemoryStream& packet);
 
 private:
 

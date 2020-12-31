@@ -38,7 +38,7 @@ void ScreenGame::writeScoresPacket(OutputMemoryStream& packet)
 	packet << currentScoreBoard.mState;
 }
 
-void ScreenGame::onPacketRecieved(InputMemoryStream& packet)
+void ScreenGame::onPacketRecieved(const InputMemoryStream& packet)
 {
 	uint32 totalScores;
 	packet >> totalScores;
@@ -149,14 +149,14 @@ void ScreenGame::gui()
 		if (ImGui::Begin("ScoreBoard", &scoreBoardActive))
 		{
 			//Time Remaining
-			ImGui::Text("Time remaining: %i seconds", currentScoreBoard.timeRemaining);
+			ImGui::Text("Time remaining: %f seconds", currentScoreBoard.timeRemaining);
 			ImGui::Text("");
 			ImGui::Separator();
 			ImGui::Text("");
 			//Kill Score
 			for (int i = 0; i < currentScoreBoard.scores.size(); i++)
 			{
-				ImGui::Text("%s  -  %s  -  %i", std::get<0>(currentScoreBoard.scores[i]), std::get<1>(currentScoreBoard.scores[i]), std::get<2>(currentScoreBoard.scores[i]));
+				ImGui::Text("%i  -  %i  -  %i", std::get<0>(currentScoreBoard.scores[i]).c_str(), std::get<1>(currentScoreBoard.scores[i]), std::get<2>(currentScoreBoard.scores[i]));
 			}
 		}
 		ImGui::End();
@@ -165,14 +165,14 @@ void ScreenGame::gui()
 		if (ImGui::Begin("Final Score", &finalScoreBoard))
 		{
 			//Time Remaining to next match
-			ImGui::Text("Time remaining: %i seconds", currentScoreBoard.timeRemaining);
+			ImGui::Text("Time remaining: %f seconds", currentScoreBoard.timeRemaining);
 			ImGui::Text("");
 			ImGui::Separator();
 			ImGui::Text("");
 			//Total Kill Score
 			for (int i = 0; i < currentScoreBoard.scores.size(); i++)
 			{
-				ImGui::Text("%s  -  %s  -  %i", std::get<0>(currentScoreBoard.scores[i]), std::get<1>(currentScoreBoard.scores[i]), std::get<2>(currentScoreBoard.scores[i]));
+				ImGui::Text("%i  -  %i  -  %i", std::get<0>(currentScoreBoard.scores[i]).c_str(), std::get<1>(currentScoreBoard.scores[i]), std::get<2>(currentScoreBoard.scores[i]));
 			}
 		}
 		ImGui::End();

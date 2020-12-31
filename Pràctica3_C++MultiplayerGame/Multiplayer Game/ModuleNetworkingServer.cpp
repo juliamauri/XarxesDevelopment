@@ -135,7 +135,10 @@ void ModuleNetworkingServer::onPacketReceived(const InputMemoryStream &packet, c
 				welcomePacket << PROTOCOL_ID;
 				welcomePacket << ServerMessage::Welcome;
 				welcomePacket << proxy->clientId;
-				welcomePacket << proxy->gameObject->networkId;
+				if (App->modScreen->screenGame->GetState() == ScreenGame::MatchState::Running)
+					welcomePacket << proxy->gameObject->networkId;
+				else
+					welcomePacket << (uint32)0;
 				sendPacket(welcomePacket, fromAddress);
 
 				if (App->modScreen->screenGame->GetState() == ScreenGame::MatchState::Running) {

@@ -147,34 +147,30 @@ void ScreenGame::gui()
 {
 	if (!isServer)
 	{
-		bool scoreBoardActive = currentScoreBoard.mState != End;
-		if (ImGui::Begin("ScoreBoard", &scoreBoardActive))
+		
+		if (ImGui::Begin("ScoreBoard"))
 		{
 			//Time Remaining
-			ImGui::Text("Time remaining: %.f seconds", currentScoreBoard.timeRemaining);
+			if (currentScoreBoard.mState == Waiting)
+			{
+				ImGui::Text("Match starting in %.f", currentScoreBoard.timeRemaining);
+			}
+			else if(currentScoreBoard.mState == Running)
+			{
+				ImGui::Text("Time remaining: %.f seconds", currentScoreBoard.timeRemaining);
+			}
+			else
+			{
+				ImGui::Text("Next match starting in %.f seconds", currentScoreBoard.timeRemaining);
+			}
+			
 			ImGui::Text("");
 			ImGui::Separator();
 			ImGui::Text("");
 			//Kill Score
 			for (int i = 0; i < currentScoreBoard.scores.size(); i++)
 			{
-				ImGui::Text("%s  -  %u  -  %u", std::get<0>(currentScoreBoard.scores[i]).c_str(), std::get<1>(currentScoreBoard.scores[i]), std::get<2>(currentScoreBoard.scores[i]));
-			}
-		}
-		ImGui::End();
-
-		bool finalScoreBoard = currentScoreBoard.mState == End;
-		if (ImGui::Begin("Final Score", &finalScoreBoard))
-		{
-			//Time Remaining to next match
-			ImGui::Text("Time remaining: %.f seconds", currentScoreBoard.timeRemaining);
-			ImGui::Text("");
-			ImGui::Separator();
-			ImGui::Text("");
-			//Total Kill Score
-			for (int i = 0; i < currentScoreBoard.scores.size(); i++)
-			{
-				ImGui::Text("%s  -  %u  -  %u", std::get<0>(currentScoreBoard.scores[i]).c_str(), std::get<1>(currentScoreBoard.scores[i]), std::get<2>(currentScoreBoard.scores[i]));
+				ImGui::Text("%s  -  %u", std::get<0>(currentScoreBoard.scores[i]).c_str(), std::get<2>(currentScoreBoard.scores[i]));
 			}
 		}
 		ImGui::End();

@@ -13,6 +13,16 @@ uint32 ScreenGame::AddPlayer(const char* name, uint8 spaceType)
 	return static_cast<uint32>(currentScoreBoard.scores.size() - 1);
 }
 
+void ScreenGame::DeletePlayer(uint32 id)
+{
+	uint32 count = 0;
+	for(auto iter = currentScoreBoard.scores.begin(); iter != currentScoreBoard.scores.end(); iter++, count++)
+		if (count == id) {
+			currentScoreBoard.scores.erase(iter);
+			break;
+		}
+}
+
 ScreenGame::MatchState ScreenGame::GetState() const
 {
 	return currentScoreBoard.mState;

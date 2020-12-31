@@ -20,6 +20,7 @@ public:
 	uint8 spaceshipType = 0;
 
 	uint32 AddPlayer(const char* name, uint8 spaceType);
+	void DeletePlayer(uint32 id);
 	MatchState GetState()const;
 
 	void ScorePoint(uint32 id);

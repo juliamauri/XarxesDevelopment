@@ -113,3 +113,9 @@ void ReplicationManagerServer::popFrontAction()
 {
 	actionsToWrite.pop_front();
 }
+
+void ReplicationManagerServer::clear()
+{
+	replicationCommands.clear();
+	actionsToWrite.clear();
+}

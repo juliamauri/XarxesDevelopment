@@ -16,6 +16,8 @@ public:
 
 	void popFrontAction();
 
+	void clear();
+
 private:
 	std::unordered_map<uint32, ReplicationCommand> replicationCommands;
 	std::list<OutputMemoryStream> actionsToWrite;

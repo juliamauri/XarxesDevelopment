@@ -283,6 +283,8 @@ void ModuleNetworkingClient::onUpdate()
 
 void ModuleNetworkingClient::onConnectionReset(const sockaddr_in & fromAddress)
 {
+	replicationClient.clear();
+	deliveryManager.clear();
 	disconnect();
 }
 

@@ -131,3 +131,8 @@ void ReplicationManagerClient::read(const InputMemoryStream& packet)
 		}
 	}
 }
+
+void ReplicationManagerClient::clear()
+{
+	netGODelted.clear();
+}

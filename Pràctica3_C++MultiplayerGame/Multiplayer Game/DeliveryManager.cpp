@@ -103,8 +103,12 @@ bool DeliveryManager::processSequencerNumber(const InputMemoryStream& packet, fl
 
 void DeliveryManager::clear()
 {
+	for (auto dev : pendingDeliveries)
+		delete dev.delegate;
 	pendingDeliveries.clear();
 	sequence_numbers_pending_ack.clear();
+	next_sequence_number = 0;
+	next_expected_number = 0;
 }
 
 bool DeliveryManager::hasSequenceNumberPendingAck() const

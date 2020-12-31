@@ -8,6 +8,7 @@ public:
 
 	void read(const InputMemoryStream& packet);
 
+	void clear();
 
 private:
 	std::vector<uint32> netGODelted;

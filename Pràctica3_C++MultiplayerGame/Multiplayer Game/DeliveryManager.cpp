@@ -62,11 +62,11 @@ void DeliveryManager::processTiemdOutPackets(ReplicationManagerServer* replicati
 bool DeliveryManager::processSequencerNumber(const InputMemoryStream& packet, float& timeSequence)
 {
 	bool ret = false;
-	uint32 totalSequenceN;
+	size_t totalSequenceN;
 	packet >> totalSequenceN;
 	std::vector<uint32> savedNumbers;
 
-	for (uint32 i = 0; i < totalSequenceN; i++) {
+	for (size_t i = 0; i < totalSequenceN; i++) {
 		uint32 sequenceNumber;
 		packet >> sequenceNumber;
 		savedNumbers.push_back(sequenceNumber);

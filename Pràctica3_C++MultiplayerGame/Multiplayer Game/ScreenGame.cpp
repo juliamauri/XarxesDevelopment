@@ -38,12 +38,12 @@ void ScreenGame::writeScoresPacket(OutputMemoryStream& packet)
 
 void ScreenGame::onPacketRecieved(const InputMemoryStream& packet)
 {
-	uint32 totalScores;
+	size_t totalScores;
 	packet >> totalScores;
 
 	currentScoreBoard.scores.clear();
 
-	for (uint32 i = 0; i < totalScores; i++)
+	for (size_t i = 0; i < totalScores; i++)
 	{
 		std::string playerName;
 		packet >> playerName;

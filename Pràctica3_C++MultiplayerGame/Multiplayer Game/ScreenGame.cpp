@@ -69,7 +69,24 @@ void ScreenGame::onPacketRecieved(const InputMemoryStream& packet)
 	}
 
 	packet >> currentScoreBoard.timeRemaining;
+	MatchState lastState = currentScoreBoard.mState;
 	packet >> currentScoreBoard.mState;
+
+	if (lastState == MatchState::Running && currentScoreBoard.mState == MatchState::End) {
+		maximumPoints = 0;
+		winnersID.clear();
+		for (uint32 i = 0; i < currentScoreBoard.scores.size(); i++)
+		{
+			uint32 score = std::get<2>(currentScoreBoard.scores[i]);
+			if (score > maximumPoints) {
+				maximumPoints = score;
+				winnersID.clear();
+				winnersID.push_back(std::get<0>(currentScoreBoard.scores[i]));
+			}
+			else if (score == maximumPoints)
+				winnersID.push_back(std::get<0>(currentScoreBoard.scores[i]));
+		}
+	}
 
 	packet >> respawn;
 	packet >> timeToRespawn;
@@ -138,21 +155,6 @@ void ScreenGame::update()
 				case ScreenGame::MatchState::Running:
 					//Notify To Stop
 					currentScoreBoard.timeRemaining = TIME_NEXT_MATCH;
-					 
-					maximumPoints = 0;
-					winnersID.clear();
-					for (uint32 i = 0; i < currentScoreBoard.scores.size(); i++)
-					{
-						uint32 score = std::get<2>(currentScoreBoard.scores[i]);
-						if (score > maximumPoints) {
-							maximumPoints = score;
-							winnersID.clear();
-							winnersID.push_back(std::get<0>(currentScoreBoard.scores[i]));
-						}
-						else if (score == maximumPoints)
-							winnersID.push_back(std::get<0>(currentScoreBoard.scores[i]));
-					}
-
 					currentScoreBoard.mState = ScreenGame::MatchState::End;
 					break;
 				case ScreenGame::MatchState::End:

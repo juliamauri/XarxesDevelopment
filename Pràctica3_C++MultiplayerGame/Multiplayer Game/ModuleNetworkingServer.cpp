@@ -433,8 +433,9 @@ void ModuleNetworkingServer::onConnectionReset(const sockaddr_in & fromAddress)
 	{
 		// Clear the client proxy
 		proxy->deliverManager.clear();
-		proxy->replicationServer.clear();
+		if(proxy->gameObject) NetworkDestroy(proxy->gameObject);
 		destroyClientProxy(proxy);
+		proxy->replicationServer.clear();
 	}
 }
 
@@ -451,10 +452,16 @@ void ModuleNetworkingServer::onDisconnect()
 	for (ClientProxy &clientProxy : clientProxies)
 	{
 		clientProxy.deliverManager.clear();
-		clientProxy.replicationServer.clear();
 		destroyClientProxy(&clientProxy);
+		clientProxy.replicationServer.clear();
 	}
-	
+
+	for (int i = 0; i <= MAX_GAME_OBJECTS; i++) {
+		netGameObjectsToDestroyWithDelay[i] = {};
+	}
+
+	App->modScreen->screenGame->clear();
+
 	nextClientId = 0;
 
 	state = ServerState::Stopped;
@@ -495,10 +502,10 @@ ModuleNetworkingServer::ClientProxy * ModuleNetworkingServer::getClientProxy(con
 	return nullptr;
 }
 
-void ModuleNetworkingServer::destroyClientProxy(ClientProxy *clientProxy)
+void ModuleNetworkingServer::destroyClientProxy(ClientProxy *clientProxy, bool fromDisconnect)
 {
 	// Destroy the object from all clients
-	if (IsValid(clientProxy->gameObject))
+	if (!fromDisconnect && IsValid(clientProxy->gameObject))
 	{
 		destroyNetworkObject(clientProxy->gameObject);
 	}

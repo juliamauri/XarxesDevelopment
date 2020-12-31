@@ -271,11 +271,6 @@ void ModuleNetworkingClient::onUpdate()
 			{
 				App->modRender->cameraPosition = playerGameObject->position;
 			}
-			else
-			{
-				// This means that the player has been destroyed (e.g. killed)
-
-			}
 		}
 
 	}

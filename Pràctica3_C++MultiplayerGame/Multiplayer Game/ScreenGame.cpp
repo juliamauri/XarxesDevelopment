@@ -92,6 +92,17 @@ void ScreenGame::onPacketRecieved(const InputMemoryStream& packet)
 	packet >> timeToRespawn;
 }
 
+void ScreenGame::clear()
+{
+	currentScoreBoard.scores.clear();
+	currentScoreBoard.mState = Waiting;
+	currentScoreBoard.timeRemaining = TIME_STARTING_MATCH;
+	respawn = false;
+	timeToRespawn = 0.0f;
+	winnersID.clear();
+	maximumPoints = 0;
+}
+
 void ScreenGame::enable()
 {
 	if (isServer)

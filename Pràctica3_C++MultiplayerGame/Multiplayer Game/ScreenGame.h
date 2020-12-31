@@ -27,6 +27,9 @@ public:
 
 	void writeScoresPacket(OutputMemoryStream& packet);
 	void onPacketRecieved(const InputMemoryStream& packet);
+
+	void clear();
+
 private:
 
 	struct ScoreBoard {

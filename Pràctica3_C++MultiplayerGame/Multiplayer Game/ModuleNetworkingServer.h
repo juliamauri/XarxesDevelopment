@@ -70,7 +70,7 @@ private:
 
 	ClientProxy * getClientProxy(const sockaddr_in &clientAddress);
 
-    void destroyClientProxy(ClientProxy *clientProxy);
+    void destroyClientProxy(ClientProxy *clientProxy, bool fromDisconnect = false);
 
 
 

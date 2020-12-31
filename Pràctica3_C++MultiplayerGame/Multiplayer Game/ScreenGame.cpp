@@ -25,6 +25,12 @@ void ScreenGame::ScorePoint(uint32 id)
 	std::get<2>(t) = currentScore + 1;
 }
 
+void ScreenGame::EndMatch()
+{
+	if (currentScoreBoard.mState == ScreenGame::MatchState::Running)
+		currentScoreBoard.timeRemaining = TIME_MATCH;
+}
+
 void ScreenGame::writeScoresPacket(OutputMemoryStream& packet)
 {
 	size_t totalScores = currentScoreBoard.scores.size();

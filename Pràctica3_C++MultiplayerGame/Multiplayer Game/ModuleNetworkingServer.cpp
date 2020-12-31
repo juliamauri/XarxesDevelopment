@@ -103,6 +103,11 @@ void ModuleNetworkingServer::onStart()
 
 void ModuleNetworkingServer::onGui()
 {
+	if (ImGui::CollapsingHeader("Match Controls", ImGuiTreeNodeFlags_DefaultOpen))
+	{
+		if (ImGui::Button("End match")) App->modScreen->screenGame->EndMatch();
+	}
+
 	if (ImGui::CollapsingHeader("ModuleNetworkingServer", ImGuiTreeNodeFlags_DefaultOpen))
 	{
 		ImGui::Text("Connection checking info:");

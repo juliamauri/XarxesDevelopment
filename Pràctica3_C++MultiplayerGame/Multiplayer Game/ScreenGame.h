@@ -23,6 +23,7 @@ public:
 	MatchState GetState()const;
 
 	void ScorePoint(uint32 id);
+	void EndMatch();
 
 	void writeScoresPacket(OutputMemoryStream& packet);
 	void onPacketRecieved(const InputMemoryStream& packet);

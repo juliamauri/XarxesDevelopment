@@ -81,15 +81,17 @@ bool DeliveryManager::processSequencerNumber(const InputMemoryStream& packet, fl
 	if (!ret && timeSequence > RESET_NEXT_EXPECTED_SECONDS) {
 		timeSequence = 0.0f;
 		if (!savedNumbers.empty()) {
-
-			next_expected_number = *savedNumbers.begin();
-			for (uint32 i = 0; i < totalSequenceN; i++) {
-				uint32 sequenceNumber = savedNumbers[i];
-				if (next_expected_number == sequenceNumber)
-				{
-					sequence_numbers_pending_ack.push_back(sequenceNumber);
-					next_expected_number++;
-					ret = true;
+			uint32 teoricalNextNumber = *savedNumbers.begin();
+			if (teoricalNextNumber > next_expected_number) {
+				next_expected_number = teoricalNextNumber;
+				for (uint32 i = 0; i < totalSequenceN; i++) {
+					uint32 sequenceNumber = savedNumbers[i];
+					if (next_expected_number == sequenceNumber)
+					{
+						sequence_numbers_pending_ack.push_back(sequenceNumber);
+						next_expected_number++;
+						ret = true;
+					}
 				}
 			}
 		}

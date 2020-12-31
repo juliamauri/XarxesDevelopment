@@ -14,6 +14,8 @@ public:
 
 	void RespawnPlayers();
 
+	void AddPoint(GameObject* toAdd);
+
 private:
 
 	//////////////////////////////////////////////////////////////////////
@@ -45,6 +47,7 @@ private:
 		bool connected = false;
 		sockaddr_in address;
 		uint32 clientId;
+		uint32 scoreBoardID;
 		uint8 spaceShipType;
 		std::string name;
 		GameObject *gameObject = nullptr;

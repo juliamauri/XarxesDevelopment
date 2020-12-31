@@ -38,6 +38,7 @@ enum class BehaviourType : uint8
 struct Laser : public Behaviour
 {
 	float secondsSinceCreation = 0.0f;
+	GameObject* from;
 
 	BehaviourType type() const override { return BehaviourType::Laser; }
 

@@ -19,8 +19,10 @@ public:
 	const char *playerName = "player";
 	uint8 spaceshipType = 0;
 
-	void AddPlayer(const char* name, uint8 spaceType);
+	uint32 AddPlayer(const char* name, uint8 spaceType);
 	MatchState GetState()const;
+
+	void ScorePoint(uint32 id);
 
 	void writeScoresPacket(OutputMemoryStream& packet);
 	void onPacketRecieved(const InputMemoryStream& packet);

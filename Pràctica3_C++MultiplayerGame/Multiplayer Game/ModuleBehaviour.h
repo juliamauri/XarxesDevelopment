@@ -10,7 +10,7 @@ public:
 
 	Behaviour * addBehaviour(BehaviourType behaviourType, GameObject *parentGameObject);
 	Spaceship * addSpaceship(GameObject *parentGameObject);
-	Laser     * addLaser(GameObject *parentGameObject);
+	Laser     * addLaser(GameObject *parentGameObject, GameObject* spaceShip = nullptr);
 
 private:
 

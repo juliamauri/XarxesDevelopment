@@ -83,7 +83,7 @@ void Spaceship::onInput(const InputController &input)
 			laser->sprite->order = 3;
 			laser->sprite->texture = App->modResources->laser;
 
-			Laser *laserBehaviour = App->modBehaviour->addLaser(laser);
+			Laser *laserBehaviour = App->modBehaviour->addLaser(laser, this->gameObject);
 			laserBehaviour->isServer = isServer;
 
 			laser->tag = gameObject->tag;
@@ -112,6 +112,7 @@ void Spaceship::onCollisionTriggered(Collider &c1, Collider &c2)
 	{
 		if (isServer)
 		{
+			App->modNetServer->AddPoint(((Laser*)c2.gameObject->behaviour)->from);
 			NetworkDestroy(c2.gameObject); // Destroy the laser
 		
 			if (hitPoints > 0)

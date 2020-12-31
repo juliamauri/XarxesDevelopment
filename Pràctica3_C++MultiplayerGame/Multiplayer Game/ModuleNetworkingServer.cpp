@@ -66,6 +66,16 @@ void ModuleNetworkingServer::RespawnPlayers()
 	}
 }
 
+void ModuleNetworkingServer::AddPoint(GameObject* toAdd)
+{
+	for (ClientProxy& clientProxy : clientProxies)
+		if (clientProxy.connected)
+			if (clientProxy.gameObject == toAdd) {
+				App->modScreen->screenGame->ScorePoint(clientProxy.scoreBoardID);
+				return;
+			}
+}
+
 //////////////////////////////////////////////////////////////////////
 // ModuleNetworking virtual methods
 //////////////////////////////////////////////////////////////////////
@@ -168,7 +178,7 @@ void ModuleNetworkingServer::onPacketReceived(const InputMemoryStream &packet, c
 					proxy->name = playerName;
 					proxy->clientId = nextClientId++;
 
-					App->modScreen->screenGame->AddPlayer(playerName.c_str(), proxy->spaceShipType);
+					proxy->scoreBoardID = App->modScreen->screenGame->AddPlayer(playerName.c_str(), proxy->spaceShipType);
 
 					if (App->modScreen->screenGame->GetState() == ScreenGame::MatchState::Running) {
 						// Create new network object
@@ -320,8 +330,6 @@ void ModuleNetworkingServer::onUpdate()
 		{
 			if (clientProxy.connected)
 			{
-				if(sendScoreBoard) 	sendPacket(sbPacket, clientProxy.address);
-
 				// TODO(you): UDP virtual connection lab session
 				// Suma el temps de last packet recieved, si supera el timeout desconecta el client.
 				// DISCONNECT_TIMEOUT_SECONDS
@@ -383,6 +391,15 @@ void ModuleNetworkingServer::onUpdate()
 							clientProxy.replicationServer.create(gameObject->networkId);
 						}
 					}
+				}
+
+				if (sendScoreBoard) {
+					OutputMemoryStream finalSBPacket;
+					finalSBPacket.Write(sbPacket.GetBufferPtr(), sbPacket.GetSize());
+					bool isRespawning = clientProxy.respawn > 0.0f;
+					finalSBPacket << isRespawning;
+					finalSBPacket << clientProxy.respawn;
+					sendPacket(finalSBPacket, clientProxy.address);
 				}
 
 				clientProxy.deliverManager.processTiemdOutPackets(&clientProxy.replicationServer);

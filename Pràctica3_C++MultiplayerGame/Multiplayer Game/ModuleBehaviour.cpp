@@ -46,7 +46,7 @@ Spaceship *ModuleBehaviour::addSpaceship(GameObject *parentGameObject)
 	return nullptr;
 }
 
-Laser *ModuleBehaviour::addLaser(GameObject *parentGameObject)
+Laser *ModuleBehaviour::addLaser(GameObject *parentGameObject, GameObject* spaceShip)
 {
 	for (Laser &behaviour : lasers)
 	{
@@ -54,6 +54,7 @@ Laser *ModuleBehaviour::addLaser(GameObject *parentGameObject)
 		{
 			behaviour = {};
 			behaviour.gameObject = parentGameObject;
+			behaviour.from = spaceShip;
 			parentGameObject->behaviour = &behaviour;
 			return &behaviour;
 		}

@@ -7,14 +7,21 @@ GameObject *spaceTopRight = nullptr;
 GameObject *spaceBottomLeft = nullptr;
 GameObject *spaceBottomRight = nullptr;
 
-void ScreenGame::AddPlayer(const char* name, uint8 spaceType)
+uint32 ScreenGame::AddPlayer(const char* name, uint8 spaceType)
 {
 	currentScoreBoard.scores.push_back(std::make_tuple(name, spaceType, 0));
+	return currentScoreBoard.scores.size() - 1;
 }
 
 ScreenGame::MatchState ScreenGame::GetState() const
 {
 	return currentScoreBoard.mState;
+}
+
+void ScreenGame::ScorePoint(uint32 id)
+{
+	std::tuple<std::string, uint8, uint32>& t = currentScoreBoard.scores[id];
+	std::get<2>(t) =+ 1;
 }
 
 void ScreenGame::writeScoresPacket(OutputMemoryStream& packet)

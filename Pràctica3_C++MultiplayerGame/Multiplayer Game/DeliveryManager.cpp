@@ -1,6 +1,9 @@
 #include "Networks.h"
 #include "DeliveryManager.h"
 
+#include <iterator>
+#include <stack>
+
 // TODO(you): Reliability on top of UDP lab session
 
 void DeliveryReplication::onDeliverySuccess(DeliveryManager* deliveryManager) {
@@ -9,7 +12,7 @@ void DeliveryReplication::onDeliverySuccess(DeliveryManager* deliveryManager) {
 
 void DeliveryReplication::onDeliveryFailure(DeliveryManager* deliveryManager)
 {
-	LOG("Delivery failed, sending the packet again", NULL, LOG_TYPE_ERROR);
+	LOG("Delivery failed, deleting it", NULL, LOG_TYPE_ERROR);
 }
 
 void DeliveryManager::processAckdSequenceNumbers(const InputMemoryStream& packet, ReplicationManagerServer* replicationServer)
@@ -34,14 +37,23 @@ void DeliveryManager::processAckdSequenceNumbers(const InputMemoryStream& packet
 
 void DeliveryManager::processTiemdOutPackets(ReplicationManagerServer* replicationServer)
 {
+	std::stack<std::vector<Delivery>::iterator> toDelete;
+
 	for (auto iter = pendingDeliveries.begin(); iter != pendingDeliveries.end(); iter++)
 	{
 		iter->dispatchTime += Time.deltaTime;
 		if(iter->dispatchTime > PACKET_DELIVERY_TIMEOUT_SECONDS)
 		{
-			iter->dispatchTime = 0.0;
+			replicationServer->popFrontAction();
 			iter->delegate->onDeliveryFailure(this);
+			toDelete.push(iter);
 		}
+	}
+
+	while (!toDelete.empty())
+	{
+		pendingDeliveries.erase(toDelete.top());
+		toDelete.pop();
 	}
 }
 
@@ -99,7 +111,8 @@ Delivery* DeliveryManager::createDelivery()
 
 void DeliveryManager::writeAllSequenceNumber(OutputMemoryStream& packet)
 {
-	packet << pendingDeliveries.size();
+	uint32 totalDeliveries = pendingDeliveries.size();
+	packet << totalDeliveries;
 	for (auto iter = pendingDeliveries.begin(); iter != pendingDeliveries.end(); iter++)
 		packet << iter->sequenceNumber;
 }

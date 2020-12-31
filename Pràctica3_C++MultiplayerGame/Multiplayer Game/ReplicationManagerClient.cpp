@@ -34,7 +34,7 @@ void ReplicationManagerClient::read(const InputMemoryStream& packet)
 
 				packet >> dummy.tag;
 				dummy.DeSerialize(packet);
-				LOG("Gameobject exists, filling dummy");
+				LOG("Gameobject exists or was previously deleted, filling dummy");
 				continue;
 			}
 

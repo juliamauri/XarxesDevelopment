@@ -7,6 +7,11 @@
 class ScreenGame : public Screen
 {
 public:
+	enum MatchState {
+		Waiting,
+		Running,
+		End
+	};
 
 	bool isServer = true;
 	int serverPort;
@@ -14,18 +19,16 @@ public:
 	const char *playerName = "player";
 	uint8 spaceshipType = 0;
 
+	void AddPlayer(const char* name, uint32 spaceType);
+	MatchState GetState()const;
+
+	void writeScoresPacket(OutputMemoryStream& packet);
 	void onPacketRecieved(InputMemoryStream& packet);
 
 private:
 
-	enum MatchState {
-		Waiting,
-		Running,
-		End
-	};
-
 	struct ScoreBoard {
-		std::vector<std::pair<std::string, uint32>> scores;
+		std::vector<std::tuple<std::string, uint32, uint32>> scores;
 		float timeRemaining = TIME_MATCH;
 		MatchState mState = Waiting;
 	};

@@ -7,6 +7,37 @@ GameObject *spaceTopRight = nullptr;
 GameObject *spaceBottomLeft = nullptr;
 GameObject *spaceBottomRight = nullptr;
 
+void ScreenGame::AddPlayer(const char* name, uint32 spaceType)
+{
+	currentScoreBoard.scores.push_back(std::make_tuple(name, spaceType, 0));
+}
+
+ScreenGame::MatchState ScreenGame::GetState() const
+{
+	return currentScoreBoard.mState;
+}
+
+void ScreenGame::writeScoresPacket(OutputMemoryStream& packet)
+{
+	uint32 totalScores = currentScoreBoard.scores.size();
+	packet << totalScores;
+
+	for (uint32 i = 0; i < totalScores; i++)
+	{
+		std::string playerName = std::get<0>(currentScoreBoard.scores[i]);
+		packet << playerName;
+		uint32 spaceType = std::get<1>(currentScoreBoard.scores[i]);
+		packet << spaceType;
+		uint32 score = std::get<2>(currentScoreBoard.scores[i]);
+		packet << score;
+		currentScoreBoard.scores.push_back(std::make_tuple(playerName, spaceType, score));
+	}
+
+
+	packet << currentScoreBoard.timeRemaining;
+	packet << currentScoreBoard.mState;
+}
+
 void ScreenGame::onPacketRecieved(InputMemoryStream& packet)
 {
 	uint32 totalScores;
@@ -16,9 +47,11 @@ void ScreenGame::onPacketRecieved(InputMemoryStream& packet)
 	{
 		std::string playerName;
 		packet >> playerName;
+		uint32 spaceType;
+		packet >> spaceType;
 		uint32 score;
 		packet >> score;
-		currentScoreBoard.scores.push_back({ playerName, score });
+		currentScoreBoard.scores.push_back(std::make_tuple( playerName, spaceType, score ));
 	}
 
 	packet >> currentScoreBoard.timeRemaining;
@@ -73,6 +106,37 @@ void ScreenGame::update()
 			spaceTopRight->position = bgSize * (floor(camPos / bgSize) + vec2{ 1.0f, 0.0f });
 			spaceBottomLeft->position = bgSize * (floor(camPos / bgSize) + vec2{ 0.0f, 1.0f });
 			spaceBottomRight->position = bgSize * (floor(camPos / bgSize) + vec2{ 1.0f, 1.0f });;
+		}
+		else {
+			currentScoreBoard.timeRemaining -= Time.deltaTime;
+			if (currentScoreBoard.timeRemaining < 0.f) {
+				switch (currentScoreBoard.mState)
+				{
+				case ScreenGame::MatchState::Waiting:
+					currentScoreBoard.timeRemaining = TIME_MATCH;
+					currentScoreBoard.mState = ScreenGame::MatchState::Running;
+					break;
+				case ScreenGame::MatchState::Running:
+					//Notify To Stop
+					currentScoreBoard.timeRemaining = TIME_NEXT_MATCH;
+					currentScoreBoard.mState = ScreenGame::MatchState::End;
+					break;
+				case ScreenGame::MatchState::End:
+					//Respawn Players, Reset ScoreBoard
+					currentScoreBoard.timeRemaining = TIME_STARTING_MATCH;
+					std::vector<std::tuple<std::string, uint32, uint32>> resetScores;
+					for (uint32 i = 0; i < currentScoreBoard.scores.size(); i++)
+					{
+						std::string playerName = std::get<0>(currentScoreBoard.scores[i]);
+						uint32 spaceType = std::get<1>(currentScoreBoard.scores[i]);
+						uint32 score = std::get<2>(currentScoreBoard.scores[i]);
+						resetScores.push_back(std::make_tuple(playerName, spaceType, 0));
+					}
+					currentScoreBoard.scores = resetScores;
+					currentScoreBoard.mState = ScreenGame::MatchState::Waiting;
+					break;
+				}
+			}
 		}
 	}
 }

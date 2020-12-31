@@ -19,12 +19,16 @@ void ReplicationManagerClient::read(const InputMemoryStream& packet)
 		{
 		case ReplicationAction::Create:
 		{
-			GameObject* exists = App->modLinkingContext->getNetworkGameObject(netID);
+			bool existsOrDeleted = (App->modLinkingContext->getNetworkGameObject(netID));
+			if (!existsOrDeleted) {
+				for (auto netGO : netGODelted)
+					if (existsOrDeleted = (netID == netGO))break;
+			}
 	
 			uint32 goType;
 			packet >> goType;
 
-			if (exists)
+			if (existsOrDeleted)
 			{
 				GameObject dummy;
 
@@ -117,6 +121,7 @@ void ReplicationManagerClient::read(const InputMemoryStream& packet)
 			GameObject* go = App->modLinkingContext->getNetworkGameObject(netID);
 			if (go)
 			{
+				netGODelted.push_back(netID);
 				App->modLinkingContext->unregisterNetworkGameObject(go);
 				ModuleGameObject::Destroy(go);
 				LOG("Deleting gameobject %i", netID);
